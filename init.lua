@@ -342,8 +342,88 @@ require("lazy").setup({
 				transparent = false,
 				styles = { comments = { italic = false } },
 				on_highlights = function(hl, c)
-					-- Make the color column subtle
 					hl.ColorColumn = { bg = c.bg_highlight }
+
+					-- ── C# / General — JetBrains + VS Dark style ──────────
+					-- Types & Classes
+					hl["@type"] = { fg = "#4EC9B0" }
+					hl["@type.builtin"] = { fg = "#569CD6" }
+					hl["@type.definition"] = { fg = "#4EC9B0" }
+
+					-- Keywords
+					hl["@keyword"] = { fg = "#569CD6" }
+					hl["@keyword.modifier"] = { fg = "#569CD6" }
+					hl["@keyword.operator"] = { fg = "#569CD6" }
+					hl["@keyword.return"] = { fg = "#C586C0" }
+					hl["@keyword.conditional"] = { fg = "#C586C0" }
+					hl["@keyword.repeat"] = { fg = "#C586C0" }
+					hl["@keyword.exception"] = { fg = "#C586C0" }
+
+					-- Functions & Methods
+					hl["@function"] = { fg = "#DCDCAA" }
+					hl["@function.call"] = { fg = "#DCDCAA" }
+					hl["@function.method"] = { fg = "#DCDCAA" }
+					hl["@function.method.call"] = { fg = "#DCDCAA" }
+					hl["@constructor"] = { fg = "#4EC9B0" }
+
+					-- Variables & Properties
+					hl["@variable"] = { fg = "#9CDCFE" }
+					hl["@variable.builtin"] = { fg = "#569CD6" }
+					hl["@variable.parameter"] = { fg = "#9CDCFE" }
+					hl["@variable.member"] = { fg = "#9CDCFE" }
+					hl["@property"] = { fg = "#9CDCFE" }
+					hl["@field"] = { fg = "#9CDCFE" }
+
+					-- Strings
+					hl["@string"] = { fg = "#CE9178" }
+					hl["@string.escape"] = { fg = "#D7BA7D" }
+					hl["@string.special"] = { fg = "#D7BA7D" }
+
+					-- Numbers & Constants
+					hl["@number"] = { fg = "#B5CEA8" }
+					hl["@number.float"] = { fg = "#B5CEA8" }
+					hl["@boolean"] = { fg = "#569CD6" }
+					hl["@constant"] = { fg = "#4FC1FF" }
+					hl["@constant.builtin"] = { fg = "#569CD6" }
+					hl["@constant.macro"] = { fg = "#4FC1FF" }
+
+					-- Comments
+					hl["@comment"] = { fg = "#6A9955" }
+					hl["@comment.documentation"] = { fg = "#6A9955" }
+
+					-- Operators & Punctuation
+					hl["@operator"] = { fg = "#D4D4D4" }
+					hl["@punctuation.bracket"] = { fg = "#FFD700" }
+					hl["@punctuation.delimiter"] = { fg = "#D4D4D4" }
+
+					-- Namespaces & Modules
+					hl["@namespace"] = { fg = "#C8C8C8" }
+					hl["@module"] = { fg = "#C8C8C8" }
+
+					-- Attributes مثل [Authorize] في C#
+					hl["@attribute"] = { fg = "#C8C8C8" }
+
+					-- ── LSP Semantic Tokens — تعمل مع Roslyn ─────────────
+					hl["@lsp.type.class"] = { fg = "#4EC9B0" }
+					hl["@lsp.type.interface"] = { fg = "#B8D7A3" }
+					hl["@lsp.type.struct"] = { fg = "#86C691" }
+					hl["@lsp.type.enum"] = { fg = "#B8D7A3" }
+					hl["@lsp.type.enumMember"] = { fg = "#B8D7A3" }
+					hl["@lsp.type.method"] = { fg = "#DCDCAA" }
+					hl["@lsp.type.function"] = { fg = "#DCDCAA" }
+					hl["@lsp.type.property"] = { fg = "#9CDCFE" }
+					hl["@lsp.type.variable"] = { fg = "#9CDCFE" }
+					hl["@lsp.type.parameter"] = { fg = "#9CDCFE" }
+					hl["@lsp.type.namespace"] = { fg = "#C8C8C8" }
+					hl["@lsp.type.keyword"] = { fg = "#569CD6" }
+					hl["@lsp.type.string"] = { fg = "#CE9178" }
+					hl["@lsp.type.number"] = { fg = "#B5CEA8" }
+					hl["@lsp.type.operator"] = { fg = "#D4D4D4" }
+					hl["@lsp.type.comment"] = { fg = "#6A9955" }
+					hl["@lsp.type.modifier"] = { fg = "#569CD6" }
+					hl["@lsp.type.event"] = { fg = "#DCDCAA" }
+					hl["@lsp.type.delegate"] = { fg = "#DCDCAA" }
+					hl["@lsp.type.typeParameter"] = { fg = "#B8D7A3" }
 				end,
 			})
 			vim.cmd.colorscheme("tokyonight-night")
@@ -380,6 +460,8 @@ require("lazy").setup({
 		build = ":TSUpdate",
 		branch = "main",
 		config = function()
+			require("nvim-treesitter.install").copilers = { "clang" }
+
 			local parsers = {
 				"bash",
 				"c",
@@ -417,7 +499,7 @@ require("lazy").setup({
 	},
 
 	-- Custom plugin files
-	require("kickstart.plugins.neo-tree"),
+	require("alhabib.plugins.neo-tree"),
 
 	{ import = "custom.plugins" },
 }, {
@@ -438,6 +520,16 @@ require("lazy").setup({
 			lazy = "💤",
 		},
 	},
+})
+
+-- =============================================================
+-- Treesitter for C#
+-- =============================================================
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = "cs",
+	callback = function(args)
+		pcall(vim.treesitter.start, args.buf, "c_sharp")
+	end,
 })
 
 -- ─────────────────────────────────────────────────────────────
