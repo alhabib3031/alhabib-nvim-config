@@ -7,6 +7,7 @@ return {
 	dependencies = { "mason-org/mason.nvim" },
 
 	---@module 'roslyn.config'
+	---@diagnostic disable-next-line: undefined-doc-name
 	---@type RoslynNvimConfig
 	opts = {
 		broad_search = true,

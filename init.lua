@@ -55,21 +55,21 @@ vim.diagnostic.config({
 	severity_sort = true,
 	float = { border = "rounded", source = true },
 	underline = true,
-	virtual_text = {
-		spacing = 4,
-		prefix = "●",
-	},
+	virtual_text = false,
 	virtual_lines = false,
 	jump = { float = true },
 	signs = {
 		text = {
 			[vim.diagnostic.severity.ERROR] = "❌", -- Rider style error
-			[vim.diagnostic.severity.WARN] = "⚠️",  -- Rider style warning
-			[vim.diagnostic.severity.INFO] = "ℹ️",  -- Rider style info
-			[vim.diagnostic.severity.HINT] = "💡",  -- Rider style hint/suggestion
+			[vim.diagnostic.severity.WARN] = "⚠️", -- Rider style warning
+			[vim.diagnostic.severity.INFO] = "ℹ️", -- Rider style info
+			[vim.diagnostic.severity.HINT] = "💡", -- Rider style hint/suggestion
 		},
 	},
 })
+
+vim.lsp.handlers["textDocument/publishDiagnostics"] =
+	vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = false })
 
 -- ─────────────────────────────────────────────────────────────
 -- AUTOCOMMANDS
@@ -255,22 +255,7 @@ require("lazy").setup({
 					map("grn", vim.lsp.buf.rename, "[R]e[n]ame")
 					map("grA", vim.lsp.buf.code_action, "Code [A]ction", { "n", "x" })
 					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" }) -- Rider-like code action shortcut
-					
-					-- ✅ Rider style: Show error popup when cursor is on error
-					vim.api.nvim_create_autocmd("CursorHold", {
-						buffer = event.buf,
-						callback = function()
-							local opts = {
-								focusable = false,
-								close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
-								border = "rounded",
-								source = "always",
-								prefix = " ",
-								scope = "cursor",
-							}
-							vim.diagnostic.open_float(nil, opts)
-						end,
-					})
+
 					map("grD", vim.lsp.buf.declaration, "[D]eclaration")
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
@@ -336,7 +321,7 @@ require("lazy").setup({
 			local ensure_installed = vim.tbl_keys(servers or {})
 			-- Ensure C# servers & debuggers are installed
 			vim.list_extend(ensure_installed, { "roslyn", "netcoredbg", "rzls" })
-			
+
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 			for name, server in pairs(servers) do
 				vim.lsp.config(name, server)
@@ -467,6 +452,7 @@ require("lazy").setup({
 			require("mini.comment").setup()
 			local statusline = require("mini.statusline")
 			statusline.setup({ use_icons = vim.g.have_nerd_font })
+			---@diagnostic disable-next-line: duplicate-set-field
 			statusline.section_location = function()
 				return "%2l:%-2v"
 			end
@@ -484,11 +470,26 @@ require("lazy").setup({
 
 			local ok, configs = pcall(require, "nvim-treesitter.configs")
 			if ok then
+				---@diagnostic disable-next-line: missing-fields
 				configs.setup({
 					ensure_installed = {
-						"bash", "c", "diff", "html", "lua", "luadoc", "markdown",
-						"markdown_inline", "query", "vim", "vimdoc", "c_sharp",
-						"css", "javascript", "json", "xml", "razor",
+						"bash",
+						"c",
+						"diff",
+						"html",
+						"lua",
+						"luadoc",
+						"markdown",
+						"markdown_inline",
+						"query",
+						"vim",
+						"vimdoc",
+						"c_sharp",
+						"css",
+						"javascript",
+						"json",
+						"xml",
+						"razor",
 					},
 					sync_install = false,
 					auto_install = true,
