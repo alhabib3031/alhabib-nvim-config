@@ -58,12 +58,12 @@ return {
       '',
       '',
       '',
-      '   ░█████╗░██╗░░░░░██╗░░██╗░█████╗░██████╗░██╗██████╗░',
-      '   ██╔══██╗██║░░░░░██║░░██║██╔══██╗██╔══██╗██║██╔══██╗',
-      '   ███████║██║░░░░░███████║███████║██████╦╝██║██████╦╝',
-      '   ██╔══██║██║░░░░░██╔══██║██╔══██║██╔══██╗██║██╔══██╗',
-      '   ██║░░██║███████╗██║░░██║██║░░██║██████╦╝██║██████╦╝',
-      '   ╚═╝░░╚═╝╚══════╝╚═╝░░╚═╝╚═╝░░╚═╝╚═════╝░╚═╝╚═════╝░',
+      '   █████╗ ██╗     ██╗  ██╗█████╗ ██████╗ ██╗██████╗     █████╗ ██████╗ ███████╗',
+      '   ██╔══██╗██║     ██║  ██║██╔══██╗██╔══██╗██║██╔══██╗   ██╔══██╗██╔══██╗██╔════╝',
+      '   ███████║██║     ███████║███████║██████╔╝██║██████╔╝   ███████║██║  ██║█████╗  ',
+      '   ██╔══██║██║     ██╔══██║██╔══██║██╔══██╗██║██╔══██╗   ██╔══██║██║  ██║██╔══╝  ',
+      '   ██║  ██║███████╗██║  ██║██║  ██║██████╔╝██║██████╔╝   ██║  ██║██████╔╝███████╗',
+      '   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═════╝    ╚═╝  ╚═╝╚═════╝ ╚══════╝',
       '',
       '              ░░░  I D E  ·  v 2 0 2 5  ░░░            ',
       '',
@@ -80,71 +80,71 @@ return {
     -- ════════════════════════════════════════════════════════════════
     local items = {
       {
-        icon = '  ',
-        desc = 'Open Project                          ',
+        icon = '󱂬 ',
+        desc = ' Open Project                          ',
         key = 'p',
         key_format = '  [%s]',
         action = 'lua OpenDotnetProject()',
       },
       {
-        icon = '  ',
-        desc = 'New File                              ',
+        icon = ' ',
+        desc = ' New File                              ',
         key = 'n',
         key_format = '  [%s]',
         action = 'ene | startinsert',
       },
       {
-        icon = '  ',
-        desc = 'Find File                             ',
+        icon = ' ',
+        desc = ' Find File                             ',
         key = 'f',
         key_format = '  [%s]',
         action = 'Telescope find_files',
       },
       {
-        icon = '  ',
-        desc = 'Recent Files                          ',
+        icon = ' ',
+        desc = ' Recent Files                          ',
         key = 'r',
         key_format = '  [%s]',
         action = 'Telescope oldfiles',
       },
       {
-        icon = '  ',
-        desc = 'Search in Project                     ',
+        icon = ' ',
+        desc = ' Search in Project                     ',
         key = 's',
         key_format = '  [%s]',
         action = 'Telescope live_grep',
       },
       {
-        icon = '  ',
-        desc = 'Git Status                            ',
+        icon = ' ',
+        desc = ' Git Status                            ',
         key = 'g',
         key_format = '  [%s]',
         action = 'Telescope git_status',
       },
       {
-        icon = '  ',
-        desc = 'Settings                              ',
+        icon = '⚙ ',
+        desc = ' Settings                              ',
         key = ',',
         key_format = '  [%s]',
         action = 'edit ' .. vim.fn.stdpath 'config' .. '/init.lua',
       },
       {
-        icon = '  ',
-        desc = 'Plugin Manager                        ',
+        icon = '󰒲 ',
+        desc = ' Plugin Manager                        ',
         key = 'l',
         key_format = '  [%s]',
         action = 'Lazy',
       },
       {
-        icon = '  ',
-        desc = 'LSP Servers                           ',
+        icon = '󱌢 ',
+        desc = ' LSP Servers                           ',
         key = 'm',
         key_format = '  [%s]',
         action = 'Mason',
       },
       {
-        icon = '  ',
-        desc = 'Quit                                  ',
+        icon = ' ',
+        desc = ' Quit                                  ',
         key = 'q',
         key_format = '  [%s]',
         action = 'qa',
@@ -155,9 +155,10 @@ return {
     local recent = get_recent_projects()
     if #recent > 0 then
       for i, proj in ipairs(recent) do
+        local pad = string.rep(' ', math.max(0, 38 - #proj.label))
         table.insert(items, 3 + i, {
-          icon = '  ',
-          desc = proj.label,
+          icon = '󰈚 ',
+          desc = ' ' .. proj.label .. pad,
           key = tostring(i),
           key_format = '  [%s]',
           action = function() open_project_dir(proj.path) end,
@@ -179,10 +180,11 @@ return {
           local ver = string.format('%d.%d.%d', v.major, v.minor, v.patch)
           local ok, lazy = pcall(require, 'lazy')
           local plugins = ok and tostring(lazy.stats().loaded) or '?'
+          local ms = ok and tostring(math.floor(lazy.stats().startuptime * 100 + 0.5) / 100) or '?'
           return {
             '',
             '   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-            '     ALHABIB IDE  ·  Neovim ' .. ver .. '  ·  ' .. plugins .. ' plugins active',
+            '   ⚡ Neovim ' .. ver .. ' loaded ' .. plugins .. ' plugins in ' .. ms .. 'ms',
             '   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
             '',
           }
@@ -191,16 +193,16 @@ return {
     }
 
     -- ════════════════════════════════════════════════════════════════
-    --  HIGHLIGHTS — Cyberpunk / Electric Blue palette
+    --  HIGHLIGHTS — VS Code Dark / JetBrains Premium Palette
     -- ════════════════════════════════════════════════════════════════
     local hl = vim.api.nvim_set_hl
 
-    hl(0, 'DashboardHeader', { fg = '#00d4ff', bold = true })
-    hl(0, 'DashboardCenter', { fg = '#c0caf5' })
-    hl(0, 'DashboardIcon', { fg = '#7dcfff', bold = true })
-    hl(0, 'DashboardDesc', { fg = '#a9b1d6' })
-    hl(0, 'DashboardShortCut', { fg = '#bb9af7', bold = true })
-    hl(0, 'DashboardKey', { fg = '#ff007c', bold = true })
-    hl(0, 'DashboardFooter', { fg = '#3d59a1', italic = true })
+    hl(0, 'DashboardHeader', { fg = '#569CD6', bold = true }) -- VSC Blue
+    hl(0, 'DashboardCenter', { fg = '#D4D4D4' }) -- Text
+    hl(0, 'DashboardIcon', { fg = '#4EC9B0', bold = true }) -- Teal
+    hl(0, 'DashboardDesc', { fg = '#9CDCFE' }) -- Light Blue 
+    hl(0, 'DashboardShortCut', { fg = '#C586C0', bold = true }) -- Purple
+    hl(0, 'DashboardKey', { fg = '#D7BA7D', bold = true }) -- Yellow
+    hl(0, 'DashboardFooter', { fg = '#6A9955', italic = true }) -- Green Comments
   end,
 }

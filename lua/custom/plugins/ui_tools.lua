@@ -11,7 +11,17 @@ return {
 		lazy = false,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
-			"nvim-tree/nvim-web-devicons",
+			{
+				"nvim-tree/nvim-web-devicons",
+				config = function()
+					require("nvim-web-devicons").setup({
+						override_by_extension = {
+							["sln"] = { icon = "", color = "#854CC7", name = "Solution" },
+							["csproj"] = { icon = "󰌛", color = "#512BD4", name = "CSharpProject" },
+						},
+					})
+				end,
+			},
 			"MunifTanjim/nui.nvim",
 		},
 		config = function()
@@ -22,25 +32,24 @@ return {
 
 				default_component_configs = {
 					indent = { indent_size = 2, with_expanders = true },
-					-- neo-tree v3.x requires `default` field in icon config
 					---@diagnostic disable-next-line: missing-fields
 					icon = {
-						default = "",
-						folder_closed = "",
-						folder_open = "",
-						folder_empty = "",
+						folder_closed = "",
+						folder_open = "",
+						folder_empty = "",
+						default = "󰈔",
 					},
 					git_status = {
 						symbols = {
-							added = "",
-							modified = "",
+							added = "✚",
+							modified = "",
 							deleted = "✖",
 							renamed = "󰁕",
-							untracked = "",
-							ignored = "",
+							untracked = "★", -- Changed from ? to a star so it's not confused with a broken icon
+							ignored = "",
 							unstaged = "󰄱",
-							staged = "",
-							conflict = "",
+							staged = "",
+							conflict = "",
 						},
 					},
 					file_size = { enabled = true },
@@ -189,5 +198,30 @@ return {
 				{ filter = { event = "msg_show", kind = "search_count" }, opts = { skip = true } },
 			},
 		},
+	},
+
+	-- ─────────────────────────────────────────────────────────────
+	-- Lightbulb: Rider-style code action suggestions
+	-- ─────────────────────────────────────────────────────────────
+	{
+		"kosayoda/nvim-lightbulb",
+		event = "LspAttach",
+		config = function()
+			require("nvim-lightbulb").setup({
+				autocmd = { enabled = true },
+				sign = {
+					enabled = true,
+					-- Rider's yellow suggestion lightbulb
+					text = "💡",
+					lens_text = "💡",
+				},
+				virtual_text = {
+					enabled = false,
+				},
+				float = {
+					enabled = false,
+				},
+			})
+		end,
 	},
 }

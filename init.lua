@@ -15,8 +15,10 @@ vim.o.mouse = "a"
 vim.o.showmode = false -- mode shown in statusline
 vim.o.breakindent = true
 vim.o.undofile = true
+vim.o.shadafile = vim.fn.stdpath("data") .. "/shada/main.shada"
 vim.o.ignorecase = true
 vim.o.smartcase = true
+vim.o.swapfile = false -- Disable swapfiles to prevent E325 Neo-tree errors
 vim.o.signcolumn = "yes"
 vim.o.updatetime = 250
 vim.o.timeoutlen = 300
@@ -36,7 +38,7 @@ vim.o.shiftwidth = 4
 vim.o.expandtab = true
 vim.o.smartindent = true
 
--- دعم RTL للعربية — تبديل بـ <leader>ta
+-- RTL support for Arabic — toggle with <leader>ta
 vim.o.arabicshape = true
 vim.o.arabic = false
 
@@ -46,25 +48,25 @@ end)
 
 -- ─────────────────────────────────────────────────────────────
 -- DIAGNOSTICS (Rider-like inline errors)
+-- ✅ FIX 1: Removed severity filter so all errors show up without filtering
 -- ─────────────────────────────────────────────────────────────
 vim.diagnostic.config({
 	update_in_insert = false,
 	severity_sort = true,
-	float = { border = "rounded", source = "if_many" },
-	underline = { severity = { min = vim.diagnostic.severity.WARN } },
+	float = { border = "rounded", source = true },
+	underline = true,
 	virtual_text = {
 		spacing = 4,
 		prefix = "●",
-		severity = { min = vim.diagnostic.severity.WARN },
 	},
 	virtual_lines = false,
 	jump = { float = true },
 	signs = {
 		text = {
-			[vim.diagnostic.severity.ERROR] = " ",
-			[vim.diagnostic.severity.WARN] = " ",
-			[vim.diagnostic.severity.INFO] = " ",
-			[vim.diagnostic.severity.HINT] = "󰌵 ",
+			[vim.diagnostic.severity.ERROR] = "❌", -- Rider style error
+			[vim.diagnostic.severity.WARN] = "⚠️",  -- Rider style warning
+			[vim.diagnostic.severity.INFO] = "ℹ️",  -- Rider style info
+			[vim.diagnostic.severity.HINT] = "💡",  -- Rider style hint/suggestion
 		},
 	},
 })
@@ -92,6 +94,7 @@ vim.api.nvim_create_autocmd("VimResized", {
 -- LAZY PLUGIN MANAGER
 -- ─────────────────────────────────────────────────────────────
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+---@diagnostic disable-next-line: undefined-field
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
 	local out = vim.fn.system({
 		"git",
@@ -250,7 +253,24 @@ require("lazy").setup({
 						vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = "LSP: " .. desc })
 					end
 					map("grn", vim.lsp.buf.rename, "[R]e[n]ame")
-					map("gra", vim.lsp.buf.code_action, "Code [A]ction", { "n", "x" })
+					map("grA", vim.lsp.buf.code_action, "Code [A]ction", { "n", "x" })
+					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" }) -- Rider-like code action shortcut
+					
+					-- ✅ Rider style: Show error popup when cursor is on error
+					vim.api.nvim_create_autocmd("CursorHold", {
+						buffer = event.buf,
+						callback = function()
+							local opts = {
+								focusable = false,
+								close_events = { "BufLeave", "CursorMoved", "InsertEnter", "FocusLost" },
+								border = "rounded",
+								source = "always",
+								prefix = " ",
+								scope = "cursor",
+							}
+							vim.diagnostic.open_float(nil, opts)
+						end,
+					})
 					map("grD", vim.lsp.buf.declaration, "[D]eclaration")
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
@@ -271,6 +291,15 @@ require("lazy").setup({
 								vim.api.nvim_clear_autocmds({ group = "kickstart-lsp-highlight", buffer = e2.buf })
 							end,
 						})
+						vim.api.nvim_create_autocmd("VimLeavePre", {
+							group = vim.api.nvim_create_augroup("clean-shada-tmp", { clear = true }),
+							callback = function()
+								local shada_dir = vim.fn.stdpath("data") .. "/shada"
+								for _, f in ipairs(vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)) do
+									vim.fn.delete(f)
+								end
+							end,
+						})
 					end
 
 					if client and client:supports_method("textDocument/inlayHint", event.buf) then
@@ -289,6 +318,7 @@ require("lazy").setup({
 							local path = client.workspace_folders[1].name
 							if
 								path ~= vim.fn.stdpath("config")
+								---@diagnostic disable-next-line: undefined-field
 								and (vim.uv.fs_stat(path .. "/.luarc.json") or vim.uv.fs_stat(path .. "/.luarc.jsonc"))
 							then
 								return
@@ -304,6 +334,9 @@ require("lazy").setup({
 			}
 
 			local ensure_installed = vim.tbl_keys(servers or {})
+			-- Ensure C# servers & debuggers are installed
+			vim.list_extend(ensure_installed, { "roslyn", "netcoredbg", "rzls" })
+			
 			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 			for name, server in pairs(servers) do
 				vim.lsp.config(name, server)
@@ -345,12 +378,9 @@ require("lazy").setup({
 					hl.ColorColumn = { bg = c.bg_highlight }
 
 					-- ── C# / General — JetBrains + VS Dark style ──────────
-					-- Types & Classes
 					hl["@type"] = { fg = "#4EC9B0" }
 					hl["@type.builtin"] = { fg = "#569CD6" }
 					hl["@type.definition"] = { fg = "#4EC9B0" }
-
-					-- Keywords
 					hl["@keyword"] = { fg = "#569CD6" }
 					hl["@keyword.modifier"] = { fg = "#569CD6" }
 					hl["@keyword.operator"] = { fg = "#569CD6" }
@@ -358,52 +388,36 @@ require("lazy").setup({
 					hl["@keyword.conditional"] = { fg = "#C586C0" }
 					hl["@keyword.repeat"] = { fg = "#C586C0" }
 					hl["@keyword.exception"] = { fg = "#C586C0" }
-
-					-- Functions & Methods
 					hl["@function"] = { fg = "#DCDCAA" }
 					hl["@function.call"] = { fg = "#DCDCAA" }
 					hl["@function.method"] = { fg = "#DCDCAA" }
 					hl["@function.method.call"] = { fg = "#DCDCAA" }
 					hl["@constructor"] = { fg = "#4EC9B0" }
-
-					-- Variables & Properties
 					hl["@variable"] = { fg = "#9CDCFE" }
 					hl["@variable.builtin"] = { fg = "#569CD6" }
 					hl["@variable.parameter"] = { fg = "#9CDCFE" }
 					hl["@variable.member"] = { fg = "#9CDCFE" }
 					hl["@property"] = { fg = "#9CDCFE" }
 					hl["@field"] = { fg = "#9CDCFE" }
-
-					-- Strings
 					hl["@string"] = { fg = "#CE9178" }
 					hl["@string.escape"] = { fg = "#D7BA7D" }
 					hl["@string.special"] = { fg = "#D7BA7D" }
-
-					-- Numbers & Constants
 					hl["@number"] = { fg = "#B5CEA8" }
 					hl["@number.float"] = { fg = "#B5CEA8" }
 					hl["@boolean"] = { fg = "#569CD6" }
 					hl["@constant"] = { fg = "#4FC1FF" }
 					hl["@constant.builtin"] = { fg = "#569CD6" }
 					hl["@constant.macro"] = { fg = "#4FC1FF" }
-
-					-- Comments
 					hl["@comment"] = { fg = "#6A9955" }
 					hl["@comment.documentation"] = { fg = "#6A9955" }
-
-					-- Operators & Punctuation
 					hl["@operator"] = { fg = "#D4D4D4" }
 					hl["@punctuation.bracket"] = { fg = "#FFD700" }
 					hl["@punctuation.delimiter"] = { fg = "#D4D4D4" }
-
-					-- Namespaces & Modules
 					hl["@namespace"] = { fg = "#C8C8C8" }
 					hl["@module"] = { fg = "#C8C8C8" }
-
-					-- Attributes مثل [Authorize] في C#
 					hl["@attribute"] = { fg = "#C8C8C8" }
 
-					-- ── LSP Semantic Tokens — تعمل مع Roslyn ─────────────
+					-- ── LSP Semantic Tokens — Works with Roslyn ─────────────
 					hl["@lsp.type.class"] = { fg = "#4EC9B0" }
 					hl["@lsp.type.interface"] = { fg = "#B8D7A3" }
 					hl["@lsp.type.struct"] = { fg = "#86C691" }
@@ -427,6 +441,12 @@ require("lazy").setup({
 				end,
 			})
 			vim.cmd.colorscheme("tokyonight-night")
+
+			-- ✅ Force diagnostic undercurls (red/yellow squiggly lines)
+			vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#F44747" })
+			vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#CCA700" })
+			vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "#4FC1FF" })
+			vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "#A6A6A6" })
 		end,
 	},
 
@@ -444,7 +464,7 @@ require("lazy").setup({
 		config = function()
 			require("mini.ai").setup({ n_lines = 500 })
 			require("mini.surround").setup()
-			require("mini.comment").setup() -- gc to comment (like Ctrl+/)
+			require("mini.comment").setup()
 			local statusline = require("mini.statusline")
 			statusline.setup({ use_icons = vim.g.have_nerd_font })
 			statusline.section_location = function()
@@ -456,45 +476,29 @@ require("lazy").setup({
 	-- Treesitter
 	{
 		"nvim-treesitter/nvim-treesitter",
-		lazy = false,
+		branch = "master",
 		build = ":TSUpdate",
-		branch = "main",
 		config = function()
-			require("nvim-treesitter.install").copilers = { "clang" }
+			-- Force Zig compiler exclusively
+			require("nvim-treesitter.install").compilers = { "zig" }
 
-			local parsers = {
-				"bash",
-				"c",
-				"diff",
-				"html",
-				"lua",
-				"luadoc",
-				"markdown",
-				"markdown_inline",
-				"query",
-				"vim",
-				"vimdoc",
-				"c_sharp",
-				"css",
-				"javascript",
-				"json",
-				"xml",
-				"razor", -- Razor / Blazor syntax highlighting
-			}
-			require("nvim-treesitter").install(parsers)
-			vim.api.nvim_create_autocmd("FileType", {
-				callback = function(args)
-					local language = vim.treesitter.language.get_lang(args.match)
-					if not language then
-						return
-					end
-					if not vim.treesitter.language.add(language) then
-						return
-					end
-					vim.treesitter.start(args.buf, language)
-					vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
-				end,
-			})
+			local ok, configs = pcall(require, "nvim-treesitter.configs")
+			if ok then
+				configs.setup({
+					ensure_installed = {
+						"bash", "c", "diff", "html", "lua", "luadoc", "markdown",
+						"markdown_inline", "query", "vim", "vimdoc", "c_sharp",
+						"css", "javascript", "json", "xml", "razor",
+					},
+					sync_install = false,
+					auto_install = true,
+					highlight = {
+						enable = true,
+						additional_vim_regex_highlighting = false,
+					},
+					indent = { enable = true },
+				})
+			end
 		end,
 	},
 
@@ -522,13 +526,18 @@ require("lazy").setup({
 	},
 })
 
--- =============================================================
--- Treesitter for C#
--- =============================================================
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = "cs",
-	callback = function(args)
-		pcall(vim.treesitter.start, args.buf, "c_sharp")
+-- ✅ Removed duplicate C# autocmd that conflicted with the global Treesitter
+-- Do not add any vim.treesitter.start here — the global FileType autocmd above is enough
+
+-- ─────────────────────────────────────────────────────────────
+-- AUTO-SAVE CONFIGURATION
+-- ─────────────────────────────────────────────────────────────
+vim.api.nvim_create_autocmd({ "InsertLeave", "TextChanged" }, {
+	pattern = "*",
+	callback = function()
+		if vim.bo.modified and vim.bo.buftype == "" and vim.bo.readonly == false then
+			vim.cmd("silent! update")
+		end
 	end,
 })
 
