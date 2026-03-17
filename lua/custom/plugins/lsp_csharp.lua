@@ -10,8 +10,8 @@ return {
 	---@diagnostic disable-next-line: undefined-doc-name
 	---@type RoslynNvimConfig
 	opts = {
-		broad_search = true,
-		filewatching = "roslyn",
+		broad_search = false,
+		filewatching = "auto",
 	},
 
 	config = function(_, opts)
@@ -21,6 +21,8 @@ return {
 				["csharp|background_analysis"] = {
 					dotnet_analyzer_diagnostics_scope = "fullSolution",
 					dotnet_compiler_diagnostics_scope = "fullSolution",
+					dotnet_enable_concurrent_analyzer = true,
+					dotnet_enable_generated_code_analysis = false,
 				},
 				["csharp|inlay_hints"] = {
 					csharp_enable_inlay_hints_for_implicit_object_creation = true,

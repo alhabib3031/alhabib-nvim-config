@@ -8,159 +8,119 @@ return {
   event = 'VimEnter',
   dependencies = { 'nvim-tree/nvim-web-devicons' },
   config = function()
+    -- ── Actions from dotnet_actions.lua ─────────────────────────
+    local actions_mod = require('custom.dotnet_actions')
+
     -- ── Safe project opener ──────────────────────────────────────
     local function open_project_dir(dir)
       if _G.OpenProjectDir then
         _G.OpenProjectDir(dir)
       else
         vim.api.nvim_set_current_dir(dir)
-        vim.defer_fn(function() vim.cmd('Neotree filesystem reveal dir=' .. vim.fn.fnameescape(dir) .. ' left show') end, 60)
+        vim.defer_fn(function() 
+          vim.cmd('Neotree filesystem reveal dir=' .. vim.fn.fnameescape(dir) .. ' left show') 
+        end, 60)
       end
     end
 
-    -- ── Collect recent .NET projects ─────────────────────────────
+    -- ── Collect recent .NET projects (styled like Rider) ─────────
     local function get_recent_projects()
       local results = {}
       local seen_dirs = {}
       local oldfiles = vim.v.oldfiles or {}
       for _, file in ipairs(oldfiles) do
-        if #results >= 5 then break end
-        local dir = vim.fn.fnamemodify(file, ':h')
+        if #results >= 7 then break end
+        local dir = vim.fn.fnamemodify(file, ':p:h')
         local ext = vim.fn.fnamemodify(file, ':e')
-        if not seen_dirs[dir] and (ext == 'cs' or ext == 'sln' or ext == 'csproj') then
+        
+        if not seen_dirs[dir] and (ext == 'cs' or ext == 'sln' or ext == 'csproj' or ext == 'cshtml' or ext == 'razor') then
           seen_dirs[dir] = true
-          local short = vim.fn.fnamemodify(dir, ':~')
-          if #short > 42 then short = '...' .. short:sub(-40) end
-          table.insert(results, { path = dir, label = short })
+          local label = vim.fn.fnamemodify(dir, ':t')
+          if label == '' then label = 'Solution' end
+          
+          local path = vim.fn.fnamemodify(dir, ':~')
+          if #path > 60 then path = '...' .. path:sub(-57) end
+          
+          table.insert(results, { path = dir, label = label, full_path = path })
         end
       end
       return results
     end
 
-    -- ── Time-based greeting ───────────────────────────────────────
-    local function greeting()
-      local hour = tonumber(os.date '%H')
-      if hour < 6 then
-        return '  Good Night'
-      elseif hour < 12 then
-        return '  Good Morning'
-      elseif hour < 17 then
-        return '  Good Afternoon'
-      else
-        return '  Good Evening'
-      end
-    end
-
     -- ════════════════════════════════════════════════════════════════
-    --  HEADER  — ALHABIB IDE
+    --  HEADER  — ALHABIB IDE (Premium 2026)
     -- ════════════════════════════════════════════════════════════════
     local header = {
       '',
+      '   █████╗ ██╗     ██╗  ██╗ █████╗ ██████╗ ██╗██████╗    ██╗██████╗ ███████╗',
+      '  ██╔══██╗██║     ██║  ██║██╔══██╗██╔══██╗██║██╔══██╗   ██║██╔══██╗██╔════╝',
+      '  ███████║██║     ███████║███████║██████╔╝██║██████╔╝   ██║██║  ██║█████╗  ',
+      '  ██╔══██║██║     ██╔══██║██╔══██║██╔══██╗██║██╔══██╗   ██║██║  ██║██╔══╝  ',
+      '  ██║  ██║███████╗██║  ██║██║  ██║██████╔╝██║██████╔╝   ██║██████╔╝███████╗',
+      '  ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═════╝    ╚═╝╚═════╝ ╚══════╝',
       '',
-      '',
-      '   █████╗ ██╗     ██╗  ██╗█████╗ ██████╗ ██╗██████╗     █████╗ ██████╗ ███████╗',
-      '   ██╔══██╗██║     ██║  ██║██╔══██╗██╔══██╗██║██╔══██╗   ██╔══██╗██╔══██╗██╔════╝',
-      '   ███████║██║     ███████║███████║██████╔╝██║██████╔╝   ███████║██║  ██║█████╗  ',
-      '   ██╔══██║██║     ██╔══██║██╔══██║██╔══██╗██║██╔══██╗   ██╔══██║██║  ██║██╔══╝  ',
-      '   ██║  ██║███████╗██║  ██║██║  ██║██████╔╝██║██████╔╝   ██║  ██║██████╔╝███████╗',
-      '   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚═╝╚═════╝    ╚═╝  ╚═╝╚═════╝ ╚══════╝',
-      '',
-      '              ░░░  I D E  ·  v 2 0 2 5  ░░░            ',
-      '',
-      '   ╔─────────────────────────────────────────────────╗',
-      '   │    .NET  ·  C#  ·  Blazor  ·  ASP.NET  ·  MAUI  │',
-      '   ╚─────────────────────────────────────────────────╝',
-      '',
-      '   ' .. greeting() .. '  ·  ' .. os.date '%A, %d %B %Y' .. '  ·  ' .. os.date '%H:%M',
+      '              ░░░  A L H A B I B  ·  I D E  ·  2 0 2 6  ░░░',
       '',
     }
 
     -- ════════════════════════════════════════════════════════════════
-    --  CENTER MENU
+    --  CENTER MENU — Global Actions (Buttons)
     -- ════════════════════════════════════════════════════════════════
     local items = {
       {
-        icon = '󱂬 ',
+        icon = '󰌛 ',
+        desc = ' New Solution                          ',
+        key = 'n',
+        shortcut = 'N',
+        action = function() actions_mod.new_solution() end,
+      },
+      {
+        icon = '󰂬 ',
         desc = ' Open Project                          ',
-        key = 'p',
-        key_format = '  [%s]',
+        key = 'o',
+        shortcut = 'O',
         action = 'lua OpenDotnetProject()',
       },
       {
-        icon = ' ',
-        desc = ' New File                              ',
-        key = 'n',
-        key_format = '  [%s]',
-        action = 'ene | startinsert',
+        icon = ' ',
+        desc = ' Clone Repository                      ',
+        key = 'c',
+        shortcut = 'C',
+        action = function() actions_mod.clone_repo() end,
       },
       {
         icon = ' ',
-        desc = ' Find File                             ',
+        desc = ' Search Projects (Fuzzy)               ',
         key = 'f',
-        key_format = '  [%s]',
+        shortcut = 'F',
         action = 'Telescope find_files',
-      },
-      {
-        icon = ' ',
-        desc = ' Recent Files                          ',
-        key = 'r',
-        key_format = '  [%s]',
-        action = 'Telescope oldfiles',
-      },
-      {
-        icon = ' ',
-        desc = ' Search in Project                     ',
-        key = 's',
-        key_format = '  [%s]',
-        action = 'Telescope live_grep',
-      },
-      {
-        icon = ' ',
-        desc = ' Git Status                            ',
-        key = 'g',
-        key_format = '  [%s]',
-        action = 'Telescope git_status',
       },
       {
         icon = '⚙ ',
         desc = ' Settings                              ',
         key = ',',
-        key_format = '  [%s]',
+        shortcut = ',',
         action = 'edit ' .. vim.fn.stdpath 'config' .. '/init.lua',
-      },
-      {
-        icon = '󰒲 ',
-        desc = ' Plugin Manager                        ',
-        key = 'l',
-        key_format = '  [%s]',
-        action = 'Lazy',
-      },
-      {
-        icon = '󱌢 ',
-        desc = ' LSP Servers                           ',
-        key = 'm',
-        key_format = '  [%s]',
-        action = 'Mason',
       },
       {
         icon = ' ',
         desc = ' Quit                                  ',
         key = 'q',
-        key_format = '  [%s]',
+        shortcut = 'Q',
         action = 'qa',
       },
     }
 
-    -- Inject recent projects after index 3 (after "Find File")
+    -- Inject recent projects with Rider-style formatting
     local recent = get_recent_projects()
     if #recent > 0 then
+      table.insert(items, 5, { desc = '── Recent Projects ──────────────────────────────────────────', action = '' })
       for i, proj in ipairs(recent) do
-        local pad = string.rep(' ', math.max(0, 38 - #proj.label))
-        table.insert(items, 3 + i, {
-          icon = '󰈚 ',
-          desc = ' ' .. proj.label .. pad,
+        local pad = string.rep(' ', math.max(0, 40 - #proj.label))
+        table.insert(items, 5 + i, {
+          icon = ' ',
+          desc = ' ' .. proj.label .. pad .. '  ' .. proj.full_path,
           key = tostring(i),
-          key_format = '  [%s]',
           action = function() open_project_dir(proj.path) end,
         })
       end
@@ -180,12 +140,9 @@ return {
           local ver = string.format('%d.%d.%d', v.major, v.minor, v.patch)
           local ok, lazy = pcall(require, 'lazy')
           local plugins = ok and tostring(lazy.stats().loaded) or '?'
-          local ms = ok and tostring(math.floor(lazy.stats().startuptime * 100 + 0.5) / 100) or '?'
           return {
             '',
-            '   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
-            '   ⚡ Neovim ' .. ver .. ' loaded ' .. plugins .. ' plugins in ' .. ms .. 'ms',
-            '   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+            '   ⚡ Neovim ' .. ver .. ' · Loaded ' .. plugins .. ' plugins · ALHABIB IDE 2026',
             '',
           }
         end,
@@ -193,16 +150,16 @@ return {
     }
 
     -- ════════════════════════════════════════════════════════════════
-    --  HIGHLIGHTS — VS Code Dark / JetBrains Premium Palette
+    --  HIGHLIGHTS
     -- ════════════════════════════════════════════════════════════════
     local hl = vim.api.nvim_set_hl
 
-    hl(0, 'DashboardHeader', { fg = '#569CD6', bold = true }) -- VSC Blue
-    hl(0, 'DashboardCenter', { fg = '#D4D4D4' }) -- Text
-    hl(0, 'DashboardIcon', { fg = '#4EC9B0', bold = true }) -- Teal
-    hl(0, 'DashboardDesc', { fg = '#9CDCFE' }) -- Light Blue 
-    hl(0, 'DashboardShortCut', { fg = '#C586C0', bold = true }) -- Purple
-    hl(0, 'DashboardKey', { fg = '#D7BA7D', bold = true }) -- Yellow
-    hl(0, 'DashboardFooter', { fg = '#6A9955', italic = true }) -- Green Comments
+    hl(0, 'DashboardHeader', { fg = '#569CD6', bold = true }) -- Rider/VSC Blue
+    hl(0, 'DashboardCenter', { fg = '#D4D4D4' }) -- Text color
+    hl(0, 'DashboardIcon', { fg = '#4EC9B0', bold = true }) -- Projects Green/Teal
+    hl(0, 'DashboardDesc', { fg = '#9CDCFE' }) -- Description Blue
+    hl(0, 'DashboardShortCut', { fg = '#C586C0', bold = true }) -- Keymaps
+    hl(0, 'DashboardFooter', { fg = '#6A9955', italic = true }) -- Green info
+    hl(0, 'DashboardKey', { fg = '#D7BA7D', bold = true }) -- Keyboard keys
   end,
 }

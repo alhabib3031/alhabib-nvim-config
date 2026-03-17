@@ -47,11 +47,10 @@ vim.schedule(function()
 end)
 
 -- ─────────────────────────────────────────────────────────────
--- DIAGNOSTICS (Rider-like inline errors)
--- ✅ FIX 1: Removed severity filter so all errors show up without filtering
+-- UI & DIAGNOSTICS
 -- ─────────────────────────────────────────────────────────────
 vim.diagnostic.config({
-	update_in_insert = false,
+	update_in_insert = true,
 	severity_sort = true,
 	float = { border = "rounded", source = true },
 	underline = true,
@@ -60,18 +59,46 @@ vim.diagnostic.config({
 	jump = { float = true },
 	signs = {
 		text = {
-			[vim.diagnostic.severity.ERROR] = "❌", -- Rider style error
-			[vim.diagnostic.severity.WARN] = "⚠️", -- Rider style warning
-			[vim.diagnostic.severity.INFO] = "ℹ️", -- Rider style info
-			[vim.diagnostic.severity.HINT] = "💡", -- Rider style hint/suggestion
+			-- [vim.diagnostic.severity.ERROR] = "❌", -- Rider style error
+			-- [vim.diagnostic.severity.WARN] = "⚠️", -- Rider style warning
+			-- [vim.diagnostic.severity.INFO] = "ℹ️", -- Rider style info
+			-- [vim.diagnostic.severity.HINT] = "💡", -- Rider style hint/suggestion
+			[vim.diagnostic.severity.ERROR] = " ",
+			[vim.diagnostic.severity.WARN] = " ",
+			[vim.diagnostic.severity.INFO] = " ",
+			[vim.diagnostic.severity.HINT] = " ",
 		},
 	},
 })
+
+-- Cleaner Window Separators (Rider-like borders)
+vim.opt.fillchars = {
+	horiz = "━",
+	horizup = "┻",
+	horizdown = "┳",
+	vert = "┃",
+	vertleft = "┫",
+	vertright = "┣",
+	verthoriz = "╋",
+	eob = " ", -- Hide ~ at end of buffer
+}
+vim.o.laststatus = 3 -- Global statusline for a cleaner look
+
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
     vim.lsp.diagnostic.on_publish_diagnostics,
     { virtual_text = false }
 )
+
+-- IDE-style Window Bar (Winbar) for a "boxed" code area feel
+_G.get_winbar = function()
+    local ok, devicons = pcall(require, "nvim-web-devicons")
+    if not ok then return " %f %m" end
+    local icon, hl = devicons.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
+    if not icon then return " %f %m" end
+    return string.format(" %%#%s#%s%%* %%f %%m", hl, icon)
+end
+vim.opt.winbar = "%{%v:lua.get_winbar()%}"
 
 -- ─────────────────────────────────────────────────────────────
 -- AUTOCOMMANDS

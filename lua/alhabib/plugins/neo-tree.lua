@@ -18,6 +18,23 @@ return {
   ---@module 'neo-tree'
   ---@type neotree.Config
   opts = {
+    enable_diagnostics = true,
+    default_component_configs = {
+      diagnostics = {
+        symbols = {
+          hint = "H",
+          info = "I",
+          warn = "W",
+          error = "E",
+        },
+        highlights = {
+          hint = "DiagnosticHint",
+          info = "DiagnosticInfo",
+          warn = "DiagnosticWarn",
+          error = "DiagnosticError",
+        },
+      },
+    },
     filesystem = {
       window = {
         mappings = {

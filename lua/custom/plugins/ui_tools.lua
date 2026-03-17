@@ -111,21 +111,25 @@ return {
 					close_command = "bdelete! %d",
 					diagnostics = "nvim_lsp",
 					diagnostics_indicator = function(count, level)
-						local icon = level:match("error") and " " or " "
+						local icon = level:match("error") and "●" or "●"
 						return " " .. icon .. count
 					end,
+					indicator = {
+						icon = "┃",
+						style = "icon",
+					},
 					offsets = {
 						{
 							filetype = "neo-tree",
-							text = "  Explorer",
-							text_align = "left",
+							text = "EXPLORER",
+							text_align = "center",
 							separator = true,
 						},
 					},
 					color_icons = true,
 					show_buffer_close_icons = true,
 					show_close_icon = true,
-					separator_style = "thin",
+					separator_style = "thick",
 					hover = { enabled = true, delay = 100, reveal = { "close" } },
 				},
 			})

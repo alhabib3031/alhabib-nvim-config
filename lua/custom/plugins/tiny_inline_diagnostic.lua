@@ -7,6 +7,18 @@ return {
 	priority = 1000,
 	config = function()
 		require("tiny-inline-diagnostic").setup({
+			signs = {
+				left = "",
+				right = "",
+				diag = "●",
+				arrow = "    ",
+				up_arrow = "    ",
+				vertical = " │",
+				vertical_end = " └",
+			},
+			blend = {
+				factor = 0.22,
+			},
 			-- "modern" | "classic" | "minimal" | "powerline" | "ghost" | "simple" | "nonerdfont" | "amongus"
 			preset = "modern",
 
