@@ -28,6 +28,7 @@ return {
 			require("neo-tree").setup({
 				close_if_last_window = false,
 				enable_diagnostics = true,
+				diagnostics_update_trigger = "InsertLeave", -- or "BufWritePost"
 				enable_git_status = true,
 
 				default_component_configs = {

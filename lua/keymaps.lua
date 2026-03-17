@@ -88,7 +88,7 @@ keymap("n", "\\", ":Neotree reveal<CR>", { desc = "Reveal in Explorer" })
 
 -- ─────────────────────────────────────────────────────────────
 -- TERMINAL
--- <C-`> لا يعمل في Windows — تم استبداله بـ <C-t>
+-- <C-`> does not work in Windows — replaced with <C-t> (or using ToggleTerm)
 -- ─────────────────────────────────────────────────────────────
 keymap("n", "<C-\\>", "<cmd>ToggleTerm direction=float<CR>", { desc = "Toggle floating terminal" })
 keymap("n", "<leader>th", "<cmd>ToggleTerm direction=horizontal<CR>", { desc = "Terminal horizontal" })
@@ -173,7 +173,7 @@ keymap("n", "<leader>ti", function()
 end, { desc = "[T]oggle [I]nlay Hints" })
 
 -- ─────────────────────────────────────────────────────────────
--- ARABIC RTL TOGGLE — تبديل اتجاه الكتابة للعربية
+-- ARABIC RTL TOGGLE — Toggle writing direction for Arabic
 -- ─────────────────────────────────────────────────────────────
 keymap("n", "<leader>ta", function()
 	-- vim.wo.rightleft is a boolean window-local option (correct API for Neovim)

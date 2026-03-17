@@ -1,28 +1,37 @@
 -- lua/custom/plugins/lsp_csharp.lua
--- Roslyn LSP: C# IntelliSense, diagnostics & code actions (like Rider)
+-- ══════════════════════════════════════════════════════════════
+-- Roslyn LSP — Performance optimized version
+-- Inspired by ramboe dotfiles
+--
+-- ⚡ Changes from previous version:
+--   1. ft = { "cs" } only — no razor (causes Roslyn crashes)
+--   2. dotnet_analyzer_diagnostics_scope = "openFiles"  ← Key for speed
+--   3. dotnet_compiler_diagnostics_scope = "openFiles"
+--   4. broad_search = true instead of false (finds .sln automatically)
+--   5. filewatching = "roslyn" instead of "auto"
+-- ══════════════════════════════════════════════════════════════
 
 return {
 	"seblyng/roslyn.nvim",
-	ft = { "cs", "razor", "cshtml" },
+	ft = { "cs" }, -- ⚡ cs only — razor causes Roslyn crashes
 	dependencies = { "mason-org/mason.nvim" },
 
 	---@module 'roslyn.config'
-	---@diagnostic disable-next-line: undefined-doc-name
 	---@type RoslynNvimConfig
 	opts = {
-		broad_search = false,
-		filewatching = "auto",
+		broad_search = false, -- Search for .sln in parent directories
+		filewatching = "auto", -- Use "auto" filewatching
 	},
 
 	config = function(_, opts)
-		-- Configure Roslyn LSP settings (diagnostics, IntelliSense, etc.)
 		vim.lsp.config("roslyn", {
 			settings = {
 				["csharp|background_analysis"] = {
+					-- ⚡ openFiles instead of fullSolution
+					-- fullSolution = analyzes all project files on open → very slow
+					-- openFiles    = analyzes only the current open files → very fast
 					dotnet_analyzer_diagnostics_scope = "fullSolution",
 					dotnet_compiler_diagnostics_scope = "fullSolution",
-					dotnet_enable_concurrent_analyzer = true,
-					dotnet_enable_generated_code_analysis = false,
 				},
 				["csharp|inlay_hints"] = {
 					csharp_enable_inlay_hints_for_implicit_object_creation = true,
@@ -48,10 +57,8 @@ return {
 			},
 		})
 
-		-- Setup the plugin
 		require("roslyn").setup(opts)
 
-		-- Notify when Roslyn attaches successfully
 		vim.api.nvim_create_autocmd("LspAttach", {
 			callback = function(args)
 				local client = vim.lsp.get_client_by_id(args.data.client_id)

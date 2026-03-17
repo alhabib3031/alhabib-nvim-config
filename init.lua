@@ -28,7 +28,8 @@ vim.o.list = true
 vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 vim.o.inccommand = "split"
 vim.o.cursorline = true
-vim.o.scrolloff = 8
+vim.o.scrolloff = 10
+vim.o.numberwidth = 5
 vim.o.confirm = true
 vim.o.termguicolors = true
 vim.o.wrap = false -- no line wrapping (like IDEs)
@@ -37,6 +38,10 @@ vim.o.tabstop = 4 -- C# convention
 vim.o.shiftwidth = 4
 vim.o.expandtab = true
 vim.o.smartindent = true
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "nvim_treesitter#foldexpr()"
+vim.opt.foldlevelstart = 99
+vim.opt.foldenable = true
 
 -- RTL support for Arabic — toggle with <leader>ta
 vim.o.arabicshape = true
@@ -84,19 +89,20 @@ vim.opt.fillchars = {
 }
 vim.o.laststatus = 3 -- Global statusline for a cleaner look
 
-
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(
-    vim.lsp.diagnostic.on_publish_diagnostics,
-    { virtual_text = false }
-)
+vim.lsp.handlers["textDocument/publishDiagnostics"] =
+	vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = false })
 
 -- IDE-style Window Bar (Winbar) for a "boxed" code area feel
 _G.get_winbar = function()
-    local ok, devicons = pcall(require, "nvim-web-devicons")
-    if not ok then return " %f %m" end
-    local icon, hl = devicons.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
-    if not icon then return " %f %m" end
-    return string.format(" %%#%s#%s%%* %%f %%m", hl, icon)
+	local ok, devicons = pcall(require, "nvim-web-devicons")
+	if not ok then
+		return " %f %m"
+	end
+	local icon, hl = devicons.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
+	if not icon then
+		return " %f %m"
+	end
+	return string.format(" %%#%s#%s%%* %%f %%m", hl, icon)
 end
 vim.opt.winbar = "%{%v:lua.get_winbar()%}"
 
@@ -377,91 +383,6 @@ require("lazy").setup({
 				lua = { "stylua" },
 			},
 		},
-	},
-
-	-- Colorscheme
-	{
-		"folke/tokyonight.nvim",
-		priority = 1000,
-		config = function()
-			require("tokyonight").setup({
-				style = "night",
-				transparent = false,
-				styles = { comments = { italic = false } },
-				on_highlights = function(hl, c)
-					hl.ColorColumn = { bg = c.bg_highlight }
-
-					-- ── C# / General — JetBrains + VS Dark style ──────────
-					hl["@type"] = { fg = "#4EC9B0" }
-					hl["@type.builtin"] = { fg = "#569CD6" }
-					hl["@type.definition"] = { fg = "#4EC9B0" }
-					hl["@keyword"] = { fg = "#569CD6" }
-					hl["@keyword.modifier"] = { fg = "#569CD6" }
-					hl["@keyword.operator"] = { fg = "#569CD6" }
-					hl["@keyword.return"] = { fg = "#C586C0" }
-					hl["@keyword.conditional"] = { fg = "#C586C0" }
-					hl["@keyword.repeat"] = { fg = "#C586C0" }
-					hl["@keyword.exception"] = { fg = "#C586C0" }
-					hl["@function"] = { fg = "#DCDCAA" }
-					hl["@function.call"] = { fg = "#DCDCAA" }
-					hl["@function.method"] = { fg = "#DCDCAA" }
-					hl["@function.method.call"] = { fg = "#DCDCAA" }
-					hl["@constructor"] = { fg = "#4EC9B0" }
-					hl["@variable"] = { fg = "#9CDCFE" }
-					hl["@variable.builtin"] = { fg = "#569CD6" }
-					hl["@variable.parameter"] = { fg = "#9CDCFE" }
-					hl["@variable.member"] = { fg = "#9CDCFE" }
-					hl["@property"] = { fg = "#9CDCFE" }
-					hl["@field"] = { fg = "#9CDCFE" }
-					hl["@string"] = { fg = "#CE9178" }
-					hl["@string.escape"] = { fg = "#D7BA7D" }
-					hl["@string.special"] = { fg = "#D7BA7D" }
-					hl["@number"] = { fg = "#B5CEA8" }
-					hl["@number.float"] = { fg = "#B5CEA8" }
-					hl["@boolean"] = { fg = "#569CD6" }
-					hl["@constant"] = { fg = "#4FC1FF" }
-					hl["@constant.builtin"] = { fg = "#569CD6" }
-					hl["@constant.macro"] = { fg = "#4FC1FF" }
-					hl["@comment"] = { fg = "#6A9955" }
-					hl["@comment.documentation"] = { fg = "#6A9955" }
-					hl["@operator"] = { fg = "#D4D4D4" }
-					hl["@punctuation.bracket"] = { fg = "#FFD700" }
-					hl["@punctuation.delimiter"] = { fg = "#D4D4D4" }
-					hl["@namespace"] = { fg = "#C8C8C8" }
-					hl["@module"] = { fg = "#C8C8C8" }
-					hl["@attribute"] = { fg = "#C8C8C8" }
-
-					-- ── LSP Semantic Tokens — Works with Roslyn ─────────────
-					hl["@lsp.type.class"] = { fg = "#4EC9B0" }
-					hl["@lsp.type.interface"] = { fg = "#B8D7A3" }
-					hl["@lsp.type.struct"] = { fg = "#86C691" }
-					hl["@lsp.type.enum"] = { fg = "#B8D7A3" }
-					hl["@lsp.type.enumMember"] = { fg = "#B8D7A3" }
-					hl["@lsp.type.method"] = { fg = "#DCDCAA" }
-					hl["@lsp.type.function"] = { fg = "#DCDCAA" }
-					hl["@lsp.type.property"] = { fg = "#9CDCFE" }
-					hl["@lsp.type.variable"] = { fg = "#9CDCFE" }
-					hl["@lsp.type.parameter"] = { fg = "#9CDCFE" }
-					hl["@lsp.type.namespace"] = { fg = "#C8C8C8" }
-					hl["@lsp.type.keyword"] = { fg = "#569CD6" }
-					hl["@lsp.type.string"] = { fg = "#CE9178" }
-					hl["@lsp.type.number"] = { fg = "#B5CEA8" }
-					hl["@lsp.type.operator"] = { fg = "#D4D4D4" }
-					hl["@lsp.type.comment"] = { fg = "#6A9955" }
-					hl["@lsp.type.modifier"] = { fg = "#569CD6" }
-					hl["@lsp.type.event"] = { fg = "#DCDCAA" }
-					hl["@lsp.type.delegate"] = { fg = "#DCDCAA" }
-					hl["@lsp.type.typeParameter"] = { fg = "#B8D7A3" }
-				end,
-			})
-			vim.cmd.colorscheme("tokyonight-night")
-
-			-- ✅ Force diagnostic undercurls (red/yellow squiggly lines)
-			vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#F44747" })
-			vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#CCA700" })
-			vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "#4FC1FF" })
-			vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "#A6A6A6" })
-		end,
 	},
 
 	-- TODO comments
