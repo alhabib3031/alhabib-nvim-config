@@ -13,6 +13,7 @@
 
 return {
 	"seblyng/roslyn.nvim",
+	--commit = "82d0c9724c3f8eab7342a3a136782b4788070bd0",
 	ft = { "cs" }, -- ⚡ cs only — razor causes Roslyn crashes
 	dependencies = { "mason-org/mason.nvim" },
 
@@ -20,18 +21,16 @@ return {
 	---@type RoslynNvimConfig
 	opts = {
 		broad_search = false, -- Search for .sln in parent directories
-		filewatching = "auto", -- Use "auto" filewatching
+		filewatching = "auto", -- Use "roslyn" filewatching for better stability
 	},
 
 	config = function(_, opts)
 		vim.lsp.config("roslyn", {
 			settings = {
 				["csharp|background_analysis"] = {
-					-- ⚡ openFiles instead of fullSolution
-					-- fullSolution = analyzes all project files on open → very slow
-					-- openFiles    = analyzes only the current open files → very fast
-					dotnet_analyzer_diagnostics_scope = "fullSolution",
-					dotnet_compiler_diagnostics_scope = "fullSolution",
+					-- ⚡ openFiles instead of fullSolution — KEY FOR PERFORMANCE
+					dotnet_analyzer_diagnostics_scope = "openFiles",
+					dotnet_compiler_diagnostics_scope = "openFiles",
 				},
 				["csharp|inlay_hints"] = {
 					csharp_enable_inlay_hints_for_implicit_object_creation = true,
