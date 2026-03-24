@@ -52,16 +52,16 @@ vim.schedule(function()
 end)
 
 -- Custom Filetypes (.cshtml, Razor, Caddyfile)
-vim.filetype.add({
-	extension = {
-		caddy = "caddy",
-		razor = "razor",
-		cshtml = "razor",
-	},
-	filename = {
-		Caddyfile = "caddy",
-	},
-})
+--vim.filetype.add({
+--	extension = {
+--		caddy = "caddy",
+--		razor = "razor",
+--		cshtml = "razor",
+--	},
+--	filename = {
+--		Caddyfile = "caddy",
+--	},
+--})
 
 -- UI & Diagnostics Configuration
 vim.diagnostic.config({
