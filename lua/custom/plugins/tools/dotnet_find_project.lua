@@ -45,6 +45,7 @@ _G.OpenDotnetProject = function()
       'f',
       '-e',
       'sln',
+      'slnx',
       '-e',
       'csproj',
       '--exclude',
@@ -92,7 +93,7 @@ _G.OpenRecentDotnetProject = function()
   for _, f in ipairs(vim.v.oldfiles or {}) do
     local ext = vim.fn.fnamemodify(f, ':e')
     local dir = vim.fn.fnamemodify(f, ':h')
-    if not seen[dir] and (ext == 'cs' or ext == 'sln' or ext == 'csproj') then
+    if not seen[dir] and (ext == 'cs' or ext == 'sln' or ext == 'slnx' or ext == 'csproj') then
       if vim.fn.isdirectory(dir) == 1 then
         seen[dir] = true
         table.insert(dirs, dir)

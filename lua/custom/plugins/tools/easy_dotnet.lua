@@ -27,7 +27,7 @@ return {
 
       -- ── Roslyn LSP (replaces roslyn.nvim) ────────────────────
       lsp = {
-        enabled = true,
+        enabled = false, -- Standalone roslyn.nvim will handle this now
         preload_roslyn = true,                  -- Load Roslyn before any buffer
         roslynator_enabled = true,              -- Enable Roslynator analyzer
         easy_dotnet_analyzer_enabled = true,    -- easy-dotnet's own analyzer

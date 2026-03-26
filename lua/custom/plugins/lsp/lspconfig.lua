@@ -8,7 +8,27 @@ return {
 			{
 				"mason-org/mason.nvim",
 				opts = {
-					registries = { "github:Crashdummyy/mason-registry", "github:mason-org/mason-registry" },
+					registries = {
+						"github:mason-org/mason-registry",
+						"github:Crashdummyy/mason-registry",
+					},
+					ensure_installed = {
+						"lua-language-server",
+						"stylua",
+						"bicep-lsp",
+						"html-lsp",
+						"css-lsp",
+						"eslint-lsp",
+						"typescript-language-server",
+						"netcoredbg",
+						"roslyn",
+						"json-lsp",
+						"yaml-language-server",
+						"markdown-oxide",
+						"csharpier",
+						"prettier",
+						"xmlformatter",
+					},
 				},
 			},
 			"mason-org/mason-lspconfig.nvim",
@@ -16,6 +36,11 @@ return {
 			"saghen/blink.cmp",
 		},
 		config = function()
+			-- Get mason opts to use its ensure_installed list
+			local mason_opts = require("lazy.core.config").plugins["mason.nvim"].opts
+			require("mason").setup(mason_opts)
+			require("mason-tool-installer").setup({ ensure_installed = mason_opts.ensure_installed })
+
 			vim.api.nvim_create_autocmd("LspAttach", {
 				group = vim.api.nvim_create_augroup("kickstart-lsp-attach", { clear = true }),
 				callback = function(event)
@@ -56,11 +81,16 @@ return {
 						},
 					},
 				},
+				html = {},
+				cssls = {},
+				ts_ls = {},
+				razor_ls = {},
+				eslint = {},
+				jsonls = {},
+				yamlls = {},
+				markdown_oxide = {},
+				bicep = {},
 			}
-
-			local ensure_installed = vim.tbl_keys(servers or {})
-			vim.list_extend(ensure_installed, { "roslyn", "netcoredbg" })
-			require("mason-tool-installer").setup({ ensure_installed = ensure_installed })
 
 			for name, server in pairs(servers) do
 				vim.lsp.config(name, server)
