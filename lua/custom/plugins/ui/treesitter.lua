@@ -6,13 +6,18 @@ return {
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
 		config = function()
-			-- Use MinGW GCC for tree-sitter parser compilation
-			local gcc_path = "C:\\ProgramData\\chocolatey\\lib\\mingw\\tools\\install\\mingw64\\bin\\gcc.exe"
-			vim.env.CC = gcc_path
-			require("nvim-treesitter.install").compilers = { gcc_path, "gcc", "zig" }
+			-- Use the canonical data path that init.lua already adds to runtimepath
+			local parser_path = vim.fn.stdpath("data") .. "/site"
+
 			local ok, configs = pcall(require, "nvim-treesitter.configs")
+
+			local install = require("nvim-treesitter.install")
+			install.prefer_git = false
+			install.compilers = { "gcc", "clang", "zig" }
+
 			if ok then
 				configs.setup({
+					parser_install_dir = parser_path,
 					ensure_installed = {
 						"bash",
 						"c",
@@ -33,12 +38,14 @@ return {
 						"razor",
 					},
 					highlight = {
-					enable = true,
-					additional_vim_regex_highlighting = { "razor" },
-				},
+						enable = true,
+						additional_vim_regex_highlighting = true,
+					},
 					indent = { enable = true },
 				})
 			end
+
+			vim.treesitter.language.register("razor", "cshtml")
 		end,
 	},
 }

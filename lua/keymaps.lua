@@ -10,6 +10,7 @@ local opts   = { noremap = true, silent = true }
 -- FILE & EDITOR
 -- ─────────────────────────────────────────────────────────────
 keymap("n", "<leader>pv", ":Ex<CR>",       { desc = "Project View [Ex]" })
+keymap("n", "<leader>pf", function() _G.OpenProject() end, { desc = "Project [F]inder (Generalized)" })
 keymap("n", "<C-s>",      "<cmd>w<CR>",    { desc = "Save file" })
 keymap("n", "<C-S-s>",    "<cmd>wa<CR>",   { desc = "Save all files" })
 keymap("n", "<C-q>",      "<cmd>q<CR>",    { desc = "Quit" })
@@ -27,6 +28,12 @@ keymap("n", "<C-h>", "<C-w><C-h>", { desc = "Move focus left" })
 keymap("n", "<C-l>", "<C-w><C-l>", { desc = "Move focus right" })
 keymap("n", "<C-j>", "<C-w><C-j>", { desc = "Move focus down" })
 keymap("n", "<C-k>", "<C-w><C-k>", { desc = "Move focus up" })
+
+-- Window Resizing (Smart Directional)
+keymap("n", "<C-Up>",    function() require('smart-splits').resize_up() end,    { desc = "Resize up" })
+keymap("n", "<C-Down>",  function() require('smart-splits').resize_down() end,  { desc = "Resize down" })
+keymap("n", "<C-Left>",  function() require('smart-splits').resize_left() end,  { desc = "Resize left" })
+keymap("n", "<C-Right>", function() require('smart-splits').resize_right() end, { desc = "Resize right" })
 
 -- ─────────────────────────────────────────────────────────────
 -- TABS / BUFFERS
@@ -151,10 +158,10 @@ keymap("n", "<leader>gb", "<cmd>Telescope git_branches<CR>", { desc = "Git Branc
 -- ─────────────────────────────────────────────────────────────
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open Diagnostic Quickfix" })
 keymap("n", "]d", function()
-  vim.diagnostic.jump({ count = 1, float = true })
+  vim.diagnostic.jump({ count = 1, on_jump = function() vim.diagnostic.open_float() end })
 end, { desc = "Next diagnostic" })
 keymap("n", "[d", function()
-  vim.diagnostic.jump({ count = -1, float = true })
+  vim.diagnostic.jump({ count = -1, on_jump = function() vim.diagnostic.open_float() end })
 end, { desc = "Previous diagnostic" })
 
 -- ─────────────────────────────────────────────────────────────

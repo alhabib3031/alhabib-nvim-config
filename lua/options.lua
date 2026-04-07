@@ -1,6 +1,5 @@
 -- lua/options.lua
 -- Global Neovim options for ALHABIB IDE (Rider-inspired)
-
 local opt = vim.opt
 
 -- Appearance & UI
@@ -28,7 +27,7 @@ vim.o.numberwidth = 5
 vim.o.confirm = true
 vim.o.termguicolors = true
 vim.o.wrap = false -- no line wrapping (like IDEs)
-vim.o.colorcolumn = "120" -- Rider default line length guide
+-- vim.o.colorcolumn = "120" -- Rider default line length guide (removed per request)
 
 -- Tabs & Indentation
 vim.o.tabstop = 4 -- C# convention
@@ -51,17 +50,17 @@ vim.schedule(function()
 	vim.o.clipboard = "unnamedplus"
 end)
 
--- Custom Filetypes (.cshtml, Razor, Caddyfile)
---vim.filetype.add({
---	extension = {
---		caddy = "caddy",
---		razor = "razor",
---		cshtml = "razor",
---	},
---	filename = {
---		Caddyfile = "caddy",
---	},
---})
+-- Custom Filetypes (cshtml, Razor, Caddyfile)
+vim.filetype.add({
+	extension = {
+		caddy = "caddy",
+		razor = "razor",
+		cshtml = "razor",
+	},
+	filename = {
+		Caddyfile = "caddy",
+	},
+})
 
 -- UI & Diagnostics Configuration
 vim.diagnostic.config({
@@ -94,3 +93,20 @@ opt.fillchars = {
 }
 
 vim.o.laststatus = 3 -- Global statusline
+
+-- IDE-style Winbar (Show file icon & name at the top)
+local devicons_cached = nil
+_G.get_winbar = function()
+	if not devicons_cached then
+		local ok, devicons = pcall(require, "nvim-web-devicons")
+		if ok then
+			devicons_cached = devicons
+		end
+	end
+	if not devicons_cached then
+		return " %f %m"
+	end
+	local icon, hl = devicons_cached.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
+	return string.format(" %%#%s#%s%%* %%f %%m", hl or "Normal", icon or "")
+end
+vim.opt.winbar = "%{%v:lua.get_winbar()%}"

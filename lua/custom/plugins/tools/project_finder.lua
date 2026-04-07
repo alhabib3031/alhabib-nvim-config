@@ -1,30 +1,46 @@
--- lua/custom/plugins/dotnet-find-project.lua
--- Fast async project opener — fixes the slow Neotree loading issue
+-- lua/custom/plugins/tools/project_finder.lua
+-- Extended Project Opener — Generalized for all projects
 
 local projects_path = 'C:/Users/alhab/NvimProjects'
 
 -- ─────────────────────────────────────────────────────────────
 -- Core: open a project directory in Neotree quickly
--- The old approach called Neotree synchronously after Telescope
--- closed, which caused a full re-render freeze.
--- Fix: use vim.schedule + defer to let Telescope fully unload
--- before Neotree initializes, and open Neotree in reveal mode
--- so it only scans the needed directory tree.
 -- ─────────────────────────────────────────────────────────────
 _G.OpenProjectDir = function(project_dir)
-  -- Step 1: change cwd immediately
-  vim.api.nvim_set_current_dir(project_dir)
+  -- Step 1: Normalize path (replace \ with / and get absolute path)
+  local normalized_path = project_dir:gsub("\\", "/"):gsub("//", "/")
+  normalized_path = vim.fn.fnamemodify(normalized_path, ":p")
+  
+  -- Remove trailing slash if present
+  if normalized_path:sub(-1) == "/" then
+    normalized_path = normalized_path:sub(1, -2)
+  end
 
-  -- Step 2: defer Neotree open so Telescope can fully close first
+  -- Step 2: change cwd immediately
+  vim.api.nvim_set_current_dir(normalized_path)
+
+  -- Step 3: defer Neotree open so Telescope can fully close first
   vim.defer_fn(function()
     -- Close any existing Neotree windows to avoid stale state
     vim.cmd 'Neotree close'
 
-    vim.defer_fn(function() vim.cmd('Neotree filesystem reveal dir=' .. vim.fn.fnameescape(project_dir) .. ' left show') end, 50) -- 50ms is enough — avoids the multi-second freeze
+    vim.defer_fn(function() 
+      -- Use the official Lua API which is more robust for paths with spaces/mixed slashes
+      require("neo-tree.command").execute({
+        action = "show",
+        source = "filesystem",
+        position = "left",
+        dir = normalized_path,
+        reveal = true,
+      })
+    end, 50)
   end, 10)
 end
 
-_G.OpenDotnetProject = function()
+-- ─────────────────────────────────────────────────────────────
+-- Open Any Folder (Generalized Directory Picker)
+-- ─────────────────────────────────────────────────────────────
+_G.OpenProject = function()
   local ok_telescope, telescope = pcall(require, 'telescope.builtin')
   if not ok_telescope then
     vim.notify('Telescope not available', vim.log.levels.ERROR)
@@ -34,43 +50,25 @@ _G.OpenDotnetProject = function()
   local actions = require 'telescope.actions'
   local action_state = require 'telescope.actions.state'
 
+  -- Use find_files but select the directory of the file
   telescope.find_files {
-    prompt_title = '  Open .NET Solution / Project',
+    prompt_title = '  Open Project (Select any file/folder)',
     cwd = projects_path,
-
-    -- Use fd to find only solution/project files, exclude build artifacts
-    find_command = {
-      'fd',
-      '--type',
-      'f',
-      '-e',
-      'sln',
-      'slnx',
-      '-e',
-      'csproj',
-      '--exclude',
-      'bin',
-      '--exclude',
-      'obj',
-      '--exclude',
-      '.git',
-      '--exclude',
-      'node_modules',
-    },
-
-    attach_mappings = function(prompt_bufnr)
+    find_command = { 'fd', '--type', 'd', '--max-depth', '3', '--exclude', '.git', '--exclude', 'bin', '--exclude', 'obj' },
+    
+    attach_mappings = function(prompt_bufnr, map)
       actions.select_default:replace(function()
         local selection = action_state.get_selected_entry()
         if not selection then return end
 
-        local file_path = selection.path or selection[1]
-        -- For .sln → open solution root; for .csproj → open project folder
-        local project_dir = vim.fn.fnamemodify(file_path, ':p:h')
+        local project_dir = selection.path or selection[1]
+        
+        -- If it's a file, get its directory; if it's already a directory, use it
+        if vim.fn.isdirectory(project_dir) == 0 then
+          project_dir = vim.fn.fnamemodify(project_dir, ':p:h')
+        end
 
-        -- Close Telescope first
         actions.close(prompt_bufnr)
-
-        -- Then open project asynchronously
         vim.schedule(function() _G.OpenProjectDir(project_dir) end)
       end)
       return true
@@ -79,9 +77,19 @@ _G.OpenDotnetProject = function()
 end
 
 -- ─────────────────────────────────────────────────────────────
--- Quick-open recent .NET projects from oldfiles list
+-- Standard "Find Files" in Projects (for quick access)
 -- ─────────────────────────────────────────────────────────────
-_G.OpenRecentDotnetProject = function()
+_G.FindInProjects = function()
+  require('telescope.builtin').find_files({
+    prompt_title = '  Find File in All Projects',
+    cwd = projects_path,
+  })
+end
+
+-- ─────────────────────────────────────────────────────────────
+-- Quick-open recent projects from oldfiles list
+-- ─────────────────────────────────────────────────────────────
+_G.OpenRecentProject = function()
   local pickers = require 'telescope.pickers'
   local finders = require 'telescope.finders'
   local conf = require('telescope.config').values
@@ -91,25 +99,24 @@ _G.OpenRecentDotnetProject = function()
   local seen = {}
   local dirs = {}
   for _, f in ipairs(vim.v.oldfiles or {}) do
-    local ext = vim.fn.fnamemodify(f, ':e')
     local dir = vim.fn.fnamemodify(f, ':h')
-    if not seen[dir] and (ext == 'cs' or ext == 'sln' or ext == 'slnx' or ext == 'csproj') then
+    if not seen[dir] and dir:find(projects_path, 1, true) then
       if vim.fn.isdirectory(dir) == 1 then
         seen[dir] = true
         table.insert(dirs, dir)
       end
     end
-    if #dirs >= 10 then break end
+    if #dirs >= 15 then break end
   end
 
   if #dirs == 0 then
-    vim.notify('No recent .NET projects found', vim.log.levels.INFO)
+    vim.notify('No recent projects found in ' .. projects_path, vim.log.levels.INFO)
     return
   end
 
   pickers
     .new({}, {
-      prompt_title = '  Recent .NET Projects',
+      prompt_title = '  Recent Projects',
       finder = finders.new_table {
         results = dirs,
         entry_maker = function(dir)

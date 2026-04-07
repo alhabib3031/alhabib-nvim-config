@@ -7,7 +7,7 @@ return {
 	-- ─────────────────────────────────────────────────────────────
 	{
 		"nvim-neo-tree/neo-tree.nvim",
-		branch = "v3.x",
+		-- branch = "v3.x",
 		lazy = false,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
@@ -32,29 +32,47 @@ return {
 				enable_git_status = true,
 
 				default_component_configs = {
-					indent = { indent_size = 2, with_expanders = true },
-					---@diagnostic disable-next-line: missing-fields
+					indent = {
+						indent_size = 2,
+						padding = 1, -- extra padding for cleaner look
+						with_directives = true,
+						with_expanders = true, -- if nil and file nesting is enabled, will enable expanders
+						expander_collapsed = "",
+						expander_expanded = "",
+						expander_highlight = "NeoTreeExpander",
+					},
 					icon = {
 						folder_closed = "",
 						folder_open = "",
-						folder_empty = "",
-						default = "󰈔",
+						folder_empty = "󰜌",
+						-- The next two settings are safely managed by nvim-web-devicons
+						default = "󰈚",
+						highlight = "NeoTreeFileIcon"
+					},
+					modified = {
+						symbol = "●",
+						highlight = "NeoTreeModified",
+					},
+					name = {
+						trailing_slash = false,
+						use_git_status_colors = true,
+						highlight = "NeoTreeFileName",
 					},
 					git_status = {
 						symbols = {
-							added = "✚",
-							modified = "",
-							deleted = "✖",
-							renamed = "󰁕",
-							untracked = "★", -- Changed from ? to a star so it's not confused with a broken icon
-							ignored = "",
-							unstaged = "󰄱",
-							staged = "",
-							conflict = "",
-						},
+							-- Change type
+							added     = "✚", 
+							modified  = "",
+							deleted   = "✖",
+							renamed   = "󰁕",
+							-- Status type
+							untracked = "★",
+							ignored   = "",
+							unstaged  = "󰄱",
+							staged    = "",
+							conflict  = "",
+						}
 					},
-					file_size = { enabled = true },
-					-- neo-tree v3.x requires `format` field in last_modified
 					last_modified = {
 						enabled = false,
 						format = "%Y-%m-%d %H:%M",
@@ -93,6 +111,10 @@ return {
 					use_libuv_file_watcher = true,
 				},
 			})
+			
+			-- ── Global UI Consistency ──────────────────────────────────
+			local cyan = "#00d4ff"
+			vim.api.nvim_set_hl(0, "NeoTreeCursorLine", { bg = "#1e2233", bold = true })
 		end,
 	},
 
@@ -108,30 +130,66 @@ return {
 				options = {
 					mode = "buffers",
 					style_preset = require("bufferline").style_preset.default,
-					numbers = "none",
-					close_command = "bdelete! %d",
+					separator_style = "thick", -- Solid block separator
+					enforce_regular_tabs = true,
+					always_show_bufferline = true,
+					show_buffer_close_icons = true,
+					show_close_icon = false,
+					max_name_length = 25,
+					tab_size = 20,
 					diagnostics = "nvim_lsp",
 					diagnostics_indicator = function(count, level)
-						local icon = level:match("error") and "●" or "●"
+						local icon = level:match("error") and " " or (level:match("warning") and " " or " ")
 						return " " .. icon .. count
 					end,
 					indicator = {
-						icon = "┃",
-						style = "icon",
+						style = 'box', -- Box indicator creates the full border feel for the card
 					},
+					buffer_close_icon = '󰅖', -- Cleaner icon (cross)
+					modified_icon = '●',
+					close_icon = '',
+					left_trunc_marker = '',
+					right_trunc_marker = '',
 					offsets = {
 						{
 							filetype = "neo-tree",
-							text = "EXPLORER",
+							text = " EXPLORER ",
 							text_align = "center",
 							separator = true,
 						},
 					},
 					color_icons = true,
-					show_buffer_close_icons = true,
-					show_close_icon = true,
-					separator_style = "thick",
-					hover = { enabled = true, delay = 100, reveal = { "close" } },
+				},
+				highlights = {
+					buffer_selected = {
+						fg = "#ffffff",
+						bg = "NONE",
+						bold = true,
+						italic = false,
+						sp = "#00d4ff",
+						underline = true,
+					},
+					-- Card border effects for active tab (Full outline feel)
+					indicator_selected = {
+						fg = "#00d4ff", 
+						bg = "NONE",
+					},
+					separator = {
+						fg = "#24283b", 
+						bg = "NONE",
+					},
+					separator_selected = {
+						fg = "#00d4ff", -- Cyan frame sides
+						bg = "NONE",
+					},
+					modified_selected = {
+						fg = "#00d4ff",
+						bg = "NONE",
+					},
+					close_button_selected = {
+						fg = "#f7768e",
+						bg = "NONE",
+					},
 				},
 			})
 		end,

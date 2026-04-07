@@ -1,24 +1,46 @@
 -- ============================================================
--- NVIM CONFIG — ALHABIB IDE (Rider-inspired)
+-- NVIM CONFIG — ALHABIB IDE (Minimalist Entry Point)
 -- ============================================================
 
--- 1. Load leader keys (Must be first)
+-- 0. [HOTFIX] Neovim 0.12 LSP: Fix "compare number with nil" in util.lua:524
+local original_apply_text_document_edit = vim.lsp.util.apply_text_document_edit
+vim.lsp.util.apply_text_document_edit = function(text_document_edit, index, pos_encoding, annotations)
+	if text_document_edit and text_document_edit.textDocument and text_document_edit.textDocument.version == nil then
+		text_document_edit.textDocument.version = vim.NIL
+	end
+	return original_apply_text_document_edit(text_document_edit, index, pos_encoding, annotations)
+end
+
+-- 1. Essential Global Keys (Must be defined first)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.g.have_nerd_font = true
 
--- 2. Load global options & diagnostics from options.lua
+-- 1.1 Ensure TreeSitter parser directory exists and is in runtimepath
+local ts_site = vim.fn.stdpath("data") .. "/site"
+if not (vim.uv or vim.loop).fs_stat(ts_site) then
+	vim.fn.mkdir(ts_site, "p")
+end
+vim.opt.runtimepath:prepend(ts_site)
+
+-- 2. Load Core Settings & Filetype definitions
 require("options")
 
--- 3. Install/Setup Lazy.nvim plugin manager
+-- 3. Bootstrap Plugin Manager (lazy.nvim)
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not (vim.uv or vim.loop).fs_stat(lazypath) then
-	local out = vim.fn.system({ "git", "clone", "--filter=blob:none", "--branch=stable", "https://github.com/folke/lazy.nvim.git", lazypath })
-	if vim.v.shell_error ~= 0 then error("Error cloning lazy.nvim:\n" .. out) end
+	vim.fn.system({
+		"git",
+		"clone",
+		"--filter=blob:none",
+		"--branch=stable",
+		"https://github.com/folke/lazy.nvim.git",
+		lazypath,
+	})
 end
 vim.opt.rtp:prepend(lazypath)
 
--- 4. Load plugin architecture from classified folders
+-- 4. Setup Plugin Architecture (Modules)
 require("lazy").setup({
 	{ import = "custom.plugins.ui" },
 	{ import = "custom.plugins.lsp" },
@@ -27,48 +49,25 @@ require("lazy").setup({
 	ui = { border = "rounded" },
 })
 
--- 5. Global Handlers & Redraw Functions (Winbar)
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, { virtual_text = false })
-
-local devicons_cached = nil
-_G.get_winbar = function()
-	if not devicons_cached then
-		local ok, devicons = pcall(require, "nvim-web-devicons")
-		if ok then devicons_cached = devicons end
-	end
-	if not devicons_cached then return " %f %m" end
-	local icon, hl = devicons_cached.get_icon(vim.fn.expand("%:t"), vim.fn.expand("%:e"), { default = true })
-	return string.format(" %%#%s#%s%%* %%f %%m", hl or "Normal", icon or "")
-end
-vim.opt.winbar = "%{%v:lua.get_winbar()%}"
-
--- 6. Essential Autocommands
+-- 5. Essential UI Autocommands
 local group = vim.api.nvim_create_augroup("alhabib-core", { clear = true })
 local au = vim.api.nvim_create_autocmd
 
-au("TextYankPost", { group = group, callback = function() vim.hl.on_yank() end })
-au("VimResized", { group = group, callback = function() vim.cmd("tabdo wincmd =") end })
-
--- Proactive Auto-save on InsertLeave
-au("InsertLeave", {
+-- Improved Yank Highlighting
+au("TextYankPost", {
 	group = group,
 	callback = function()
-		if vim.bo.modified and vim.bo.buftype == "" and vim.bo.readonly == false then
-			vim.cmd("silent! update")
-		end
+		vim.hl.on_yank()
 	end,
 })
 
--- 7. Load user keymaps & legacy configurations
+-- Auto-resize splits when terminal window size changes
+au("VimResized", {
+	group = group,
+	callback = function()
+		vim.cmd("tabdo wincmd =")
+	end,
+})
+
+-- 6. Load Custom Keybindings
 require("keymaps")
-
--- Final cleanup for temporary shada files
-au("VimLeavePre", {
-	group = group,
-	callback = function()
-		local shada_dir = vim.fn.stdpath("data") .. "/shada"
-		for _, f in ipairs(vim.fn.glob(shada_dir .. "/*.tmp.*", false, true)) do
-			vim.fn.delete(f)
-		end
-	end,
-})

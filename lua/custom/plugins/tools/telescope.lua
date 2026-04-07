@@ -26,7 +26,7 @@ return {
 					layout_config = { horizontal = { preview_width = 0.55 } },
 				},
 				extensions = {
-					["ui-select"] = { require("telescope.themes").get_dropdown() },
+					["ui-select"] = { require("telescope.themes").get_dropdown({ border = true }) },
 				},
 			})
 			pcall(require("telescope").load_extension, "fzf")
@@ -60,12 +60,12 @@ return {
 			vim.api.nvim_create_autocmd("LspAttach", {
 				callback = function(event)
 					local buf = event.buf
-					vim.keymap.set("n", "grr", builtin.lsp_references, { buffer = buf, desc = "References" })
-					vim.keymap.set("n", "gri", builtin.lsp_implementations, { buffer = buf, desc = "Implementations" })
-					vim.keymap.set("n", "grd", builtin.lsp_definitions, { buffer = buf, desc = "Definition" })
-					vim.keymap.set("n", "gO", builtin.lsp_document_symbols, { buffer = buf, desc = "Document Symbols" })
-					vim.keymap.set("n", "gW", builtin.lsp_dynamic_workspace_symbols, { buffer = buf, desc = "Workspace Symbols" })
-					vim.keymap.set("n", "grt", builtin.lsp_type_definitions, { buffer = buf, desc = "Type Definition" })
+					vim.keymap.set("n", "grr", builtin.lsp_references, { buf = buf, desc = "References" })
+					vim.keymap.set("n", "gri", builtin.lsp_implementations, { buf = buf, desc = "Implementations" })
+					vim.keymap.set("n", "grd", builtin.lsp_definitions, { buf = buf, desc = "Definition" })
+					vim.keymap.set("n", "gO", builtin.lsp_document_symbols, { buf = buf, desc = "Document Symbols" })
+					vim.keymap.set("n", "gW", builtin.lsp_dynamic_workspace_symbols, { buf = buf, desc = "Workspace Symbols" })
+					vim.keymap.set("n", "grt", builtin.lsp_type_definitions, { buf = buf, desc = "Type Definition" })
 				end,
 			})
 		end,

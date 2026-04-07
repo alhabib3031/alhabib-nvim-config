@@ -16,9 +16,20 @@ return {
       if _G.OpenProjectDir then
         _G.OpenProjectDir(dir)
       else
-        vim.api.nvim_set_current_dir(dir)
+        local normalized_path = dir:gsub("\\", "/"):gsub("//", "/")
+        normalized_path = vim.fn.fnamemodify(normalized_path, ":p")
+        if normalized_path:sub(-1) == "/" then
+          normalized_path = normalized_path:sub(1, -2)
+        end
+        vim.api.nvim_set_current_dir(normalized_path)
         vim.defer_fn(function() 
-          vim.cmd('Neotree filesystem reveal dir=' .. vim.fn.fnameescape(dir) .. ' left show') 
+          require("neo-tree.command").execute({
+            action = "show",
+            source = "filesystem",
+            position = "left",
+            dir = normalized_path,
+            reveal = true,
+          })
         end, 60)
       end
     end
@@ -79,7 +90,7 @@ return {
         desc = ' Open Project                          ',
         key = 'o',
         shortcut = 'O',
-        action = 'lua OpenDotnetProject()',
+        action = 'lua OpenProject()',
       },
       {
         icon = ' ',

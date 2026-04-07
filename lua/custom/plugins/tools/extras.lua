@@ -110,4 +110,20 @@ return {
       },
     },
   },
+  
+  -- ── 4. smart-splits.nvim ─────────────────────────────────────
+  -- Smart directional window resizing
+  {
+    "mrjones2014/smart-splits.nvim",
+    config = function()
+      require('smart-splits').setup({
+        -- Ignored filetypes (don't resize these to keep them static)
+        ignored_filetypes = { 'nofile', 'quickfix', 'prompt' },
+        ignored_buftypes = { 'nofile' },
+        -- when moving cursor between splits left or right, 
+        -- place cursor on same row of the *screen*
+        cursor_respects_line_number = false,
+      })
+    end
+  },
 }
