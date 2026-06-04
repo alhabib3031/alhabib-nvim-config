@@ -33,7 +33,7 @@ return {
 						"eslint-lsp",
 						"typescript-language-server",
 						"netcoredbg",
-						"roslyn",
+						"roslyn-language-server",
 						"json-lsp",
 						"yaml-language-server",
 						"markdown-oxide",
@@ -71,7 +71,7 @@ return {
 					map("gI", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
 
 					local client = vim.lsp.get_client_by_id(event.data.client_id)
-					
+
 					-- 🛠️ Fix Razor HTML Colors: Disable Semantic Tokens for .razor files
 					-- Because Roslyn paints HTML as plain text and overrides TreeSitter's beautiful colors
 					-- if vim.bo[event.buf].filetype == "razor" and client then
@@ -104,6 +104,7 @@ return {
 			})
 
 			local servers = {
+				roslyn_ls = {},
 				stylua = {},
 				lua_ls = {
 					-- [MODIFIED] Simplified lua_ls config.
@@ -123,7 +124,6 @@ return {
 				html = {},
 				cssls = {},
 				ts_ls = {},
-				razor_ls = {},
 				eslint = {},
 				jsonls = {},
 				yamlls = {},

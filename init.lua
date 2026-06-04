@@ -49,6 +49,20 @@ require("lazy").setup({
 	ui = { border = "rounded" },
 })
 
+vim.lsp.enable("roslyn_ls")
+
+vim.lsp.config("roslyn_ls", {
+	filetypes = { "razor", "cs" },
+
+	settings = {
+		-- better performance
+		["csharp|background_analysis"] = {
+			dotnet_analyzer_diagnostics_scope = "openFiles",
+			dotnet_compiler_diagnostics_scope = "openFiles",
+		},
+	},
+})
+
 -- 5. Essential UI Autocommands
 local group = vim.api.nvim_create_augroup("alhabib-core", { clear = true })
 local au = vim.api.nvim_create_autocmd

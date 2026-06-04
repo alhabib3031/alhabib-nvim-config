@@ -1,6 +1,7 @@
--- lua/custom/plugins/dashboard.lua
+-- lua/custom/plugins/ui/dashboard.lua
 -- ╔══════════════════════════════════════════╗
 -- ║   ALHABIB IDE — Ultra Modern Dashboard  ║
+-- ║   Theme: JetBrains Rider Dark 2026      ║
 -- ╚══════════════════════════════════════════╝
 
 return {
@@ -100,11 +101,11 @@ return {
         action = function() actions_mod.clone_repo() end,
       },
       {
-        icon = ' ',
+        icon = ' ',
         desc = ' Search Projects (Fuzzy)               ',
         key = 'f',
         shortcut = 'F',
-        action = 'Telescope find_files',
+        action = function() require('fzf-lua').files() end,
       },
       {
         icon = '⚙ ',
@@ -165,12 +166,13 @@ return {
     -- ════════════════════════════════════════════════════════════════
     local hl = vim.api.nvim_set_hl
 
-    hl(0, 'DashboardHeader', { fg = '#569CD6', bold = true }) -- Rider/VSC Blue
-    hl(0, 'DashboardCenter', { fg = '#D4D4D4' }) -- Text color
-    hl(0, 'DashboardIcon', { fg = '#4EC9B0', bold = true }) -- Projects Green/Teal
-    hl(0, 'DashboardDesc', { fg = '#9CDCFE' }) -- Description Blue
-    hl(0, 'DashboardShortCut', { fg = '#C586C0', bold = true }) -- Keymaps
-    hl(0, 'DashboardFooter', { fg = '#6A9955', italic = true }) -- Green info
-    hl(0, 'DashboardKey', { fg = '#D7BA7D', bold = true }) -- Keyboard keys
+    -- Rider Dark palette
+    hl(0, 'DashboardHeader',   { fg = '#6C95EB', bold = true })         -- Rider Blue
+    hl(0, 'DashboardCenter',   { fg = '#A5A5AA' })                      -- Rider foreground
+    hl(0, 'DashboardIcon',     { fg = '#39CC8F', bold = true })         -- Rider bright green
+    hl(0, 'DashboardDesc',     { fg = '#6C95EB' })                      -- Rider blue
+    hl(0, 'DashboardShortCut', { fg = '#ED94C0', bold = true })         -- Rider pink/purple
+    hl(0, 'DashboardFooter',   { fg = '#6A9955', italic = true })       -- Comment green
+    hl(0, 'DashboardKey',      { fg = '#C9A26D', bold = true })         -- Rider yellow/gold
   end,
 }

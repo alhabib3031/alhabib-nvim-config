@@ -154,6 +154,11 @@ keymap("n", "<leader>gc", "<cmd>Telescope git_commits<CR>",  { desc = "Git Commi
 keymap("n", "<leader>gb", "<cmd>Telescope git_branches<CR>", { desc = "Git Branches" })
 
 -- ─────────────────────────────────────────────────────────────
+-- FZF-LUA  (fast fuzzy search — supplements telescope for LSP)
+-- ─────────────────────────────────────────────────────────────
+-- Note: <leader>sf, sg, sb, sd, sr, s., sw, / are defined in tools/fzf.lua keys table
+
+-- ─────────────────────────────────────────────────────────────
 -- DIAGNOSTICS (Neovim 0.11+)
 -- ─────────────────────────────────────────────────────────────
 keymap("n", "<leader>q", vim.diagnostic.setloclist, { desc = "Open Diagnostic Quickfix" })

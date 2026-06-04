@@ -1,135 +1,181 @@
--- lua/custom/plugins/theme.lua
+-- lua/custom/plugins/ui/theme.lua
 -- ══════════════════════════════════════════════════════════════
--- Tokyonight + Real JetBrains Rider Colors
--- Extracted from lua/themes/jetbrains-rider.lua in ramboe dotfiles
+-- JetBrains Rider Dark Theme
+-- Colors sourced from the official "Rider Dark" Windows Terminal theme
+-- and the ramboe/dotfiles NvChad theme tables, translated to
+-- tokyonight's on_highlights API (no NvChad/base46 required).
 --
--- Changes from previous version in init.lua:
---   ✅ italic for keywords (@keyword)
---   ✅ italic for comments (@comment)
---   ✅ bold for functions (@function)
---   ✅ parameter colors white like real Rider
---   ✅ @function.call dark purple like Rider
---   ✅ @constructor pink like Rider
---   ✅ GitConflict colors
+-- Palette:
+--   background  #262626    foreground  #A5A5AA
+--   blue        #6C95EB    green       #85C46C
+--   yellow      #C9A26D    purple      #C191FF
+--   pink        #ED94C0    teal        #6aadc8
+--   cyan        #008080    red         #800000
+--   bright_green #39CC8F   dark_purple #C191FF
+--   white       #FFFFFF    comment_fg  #6A9955
+--   string_fg   #CE9178
 -- ══════════════════════════════════════════════════════════════
 
 return {
 	"folke/tokyonight.nvim",
 	priority = 1000,
-	lazy = false,
+	lazy     = false,
 	config = function()
-		-- Real Rider colors from jetbrains-rider.lua
-		local rider = {
-			blue = "#6C95EB", -- Rider blue (calmer than VSCode)
-			green = "#85C46C",
-			vibrant_grn = "#39CC8F",
-			yellow = "#C9A26D",
-			purple = "#ED94C0", -- Rider purple (pink)
-			dark_purple = "#C191FF", -- Rider dark purple
-			teal = "#6aadc8",
-			red = "#800000",
-			bright_red = "#F44747",
-			comment = "#6A9955",
-			string = "#CE9178",
-			white = "#FFFFFF",
+		-- ── Rider Dark Color Palette ──────────────────────────────────
+		local r = {
+			bg           = "#262626",
+			bg_dark      = "#1f1d2a",
+			bg_darker    = "#13111e",
+			bg_highlight = "#2e2c39",
+			fg           = "#A5A5AA",
+			white        = "#FFFFFF",
+
+			blue         = "#6C95EB",
+			green        = "#85C46C",
+			vibrant_grn  = "#39CC8F",
+			yellow       = "#C9A26D",
+			purple       = "#ED94C0",   -- pink/purple (constructors, keywords)
+			dark_purple  = "#C191FF",   -- dark purple (function calls)
+			teal         = "#6aadc8",
+			cyan         = "#008080",
+			red          = "#800000",
+			bright_red   = "#F44747",
+
+			comment      = "#6A9955",
+			string       = "#CE9178",
+			line_num     = "#474552",
+			selection    = "#08335E",
 		}
 
 		require("tokyonight").setup({
-			style = "night",
+			style       = "night",
 			transparent = false,
+
+			-- Override the base background to Rider Dark
+			on_colors = function(c)
+				c.bg           = r.bg
+				c.bg_dark      = r.bg_dark
+				c.bg_darker    = r.bg_darker
+				c.bg_highlight = r.bg_highlight
+				c.fg           = r.fg
+				c.comment      = r.comment
+				c.blue         = r.blue
+				c.green        = r.green
+				c.yellow       = r.yellow
+				c.purple       = r.purple
+				c.cyan         = r.cyan
+				c.red          = r.red
+				c.teal         = r.teal
+			end,
+
 			styles = {
-				comments = { italic = true }, -- ✅ italic for comments
-				keywords = { italic = true }, -- ✅ italic for keywords
-				functions = { bold = true }, -- ✅ bold for functions
+				comments  = { italic = true },
+				keywords  = { italic = true },
+				functions = { bold   = true },
 			},
 
-			-- on_highlights = function(hl, c)
-			-- 	hl.ColorColumn = { bg = c.bg_highlight }
+			on_highlights = function(hl, _)
+				-- ── Treesitter ────────────────────────────────────────────
+				hl["@function"]             = { bold = true }
+				hl["@function.builtin"]     = { bold = true }
+				hl["@function.call"]        = { bold = true, fg = r.dark_purple }
+				hl["@function.method"]      = { italic = true, fg = "#DCDCAA" }
+				hl["@function.method.call"] = { bold = true }
+				hl["@constructor"]          = { fg = r.purple }
 
-			-- 	-- ── Treesitter ────────────────────────────────────────
-			-- 	hl["@type"] = { fg = "#4EC9B0" }
-			-- 	hl["@type.builtin"] = { fg = rider.blue }
-			-- 	hl["@type.definition"] = { fg = "#4EC9B0" }
+				hl["@variable"]             = { fg = "#9CDCFE" }
+				hl["@variable.builtin"]     = { fg = r.blue }
+				hl["@variable.parameter"]   = { fg = r.white }
+				hl["@variable.member"]      = { fg = "#9CDCFE" }
+				hl["@property"]             = { fg = "#9CDCFE" }
+				hl["@field"]                = { fg = "#9CDCFE" }
 
-			-- 	hl["@keyword"] = { fg = rider.blue, italic = true }
-			-- 	hl["@keyword.modifier"] = { fg = rider.blue, italic = true }
-			-- 	hl["@keyword.operator"] = { fg = rider.blue }
-			-- 	hl["@keyword.return"] = { fg = "#C586C0", italic = true }
-			-- 	hl["@keyword.conditional"] = { fg = "#C586C0" }
-			-- 	hl["@keyword.repeat"] = { fg = "#C586C0" }
-			-- 	hl["@keyword.exception"] = { fg = "#C586C0" }
+				hl["@type"]                 = { fg = "#4EC9B0" }
+				hl["@type.builtin"]         = { fg = r.blue }
+				hl["@type.definition"]      = { fg = "#4EC9B0" }
 
-			-- 	hl["@function"] = { fg = "#DCDCAA", bold = true }
-			-- 	hl["@function.call"] = { fg = rider.dark_purple, bold = true } -- ✅ Dark purple like Rider
-			-- 	hl["@function.method"] = { fg = "#DCDCAA", italic = true }
-			-- 	hl["@function.method.call"] = { fg = "#DCDCAA", bold = true }
-			-- 	hl["@constructor"] = { fg = rider.purple } -- ✅ Pink like Rider
+				hl["@keyword"]              = { italic = true, fg = r.purple }
+				hl["@keyword.modifier"]     = { italic = true, fg = r.blue }
+				hl["@keyword.operator"]     = { fg = r.blue }
+				hl["@keyword.return"]       = { italic = true, fg = "#C586C0" }
+				hl["@keyword.conditional"]  = { fg = "#C586C0" }
+				hl["@keyword.repeat"]       = { fg = "#C586C0" }
+				hl["@keyword.exception"]    = { fg = "#C586C0" }
 
-			-- 	hl["@variable"] = { fg = "#9CDCFE" }
-			-- 	hl["@variable.builtin"] = { fg = rider.blue }
-			-- 	hl["@variable.parameter"] = { fg = rider.white } -- ✅ White for params
-			-- 	hl["@variable.member"] = { fg = "#9CDCFE" }
-			-- 	hl["@property"] = { fg = "#9CDCFE" }
-			-- 	hl["@field"] = { fg = "#9CDCFE" }
+				hl["@string"]               = { fg = r.string }
+				hl["@string.escape"]        = { fg = "#D7BA7D" }
+				hl["@string.special"]       = { fg = "#D7BA7D" }
 
-			-- 	hl["@string"] = { fg = rider.string }
-			-- 	hl["@string.escape"] = { fg = "#D7BA7D" }
-			-- 	hl["@string.special"] = { fg = "#D7BA7D" }
+				hl["@number"]               = { fg = "#B5CEA8" }
+				hl["@number.float"]         = { fg = "#B5CEA8" }
+				hl["@boolean"]              = { fg = r.blue }
 
-			-- 	hl["@number"] = { fg = "#B5CEA8" }
-			-- 	hl["@number.float"] = { fg = "#B5CEA8" }
-			-- 	hl["@boolean"] = { fg = rider.blue }
-			-- 	hl["@constant"] = { fg = "#4FC1FF" }
-			-- 	hl["@constant.builtin"] = { fg = rider.blue }
-			-- 	hl["@constant.macro"] = { fg = "#4FC1FF" }
+				hl["@constant"]             = { fg = "#4FC1FF" }
+				hl["@constant.builtin"]     = { fg = r.blue }
+				hl["@constant.macro"]       = { fg = "#4FC1FF" }
 
-			-- 	hl["@comment"] = { fg = rider.comment, italic = true } -- ✅ italic
-			-- 	hl["@comment.documentation"] = { fg = rider.comment, italic = true }
+				hl["@comment"]              = { italic = true, fg = r.comment }
+				hl["@comment.documentation"]= { italic = true, fg = r.comment }
 
-			-- 	hl["@operator"] = { fg = "#D4D4D4" }
-			-- 	hl["@punctuation.bracket"] = { fg = "#FFD700" }
-			-- 	hl["@punctuation.delimiter"] = { fg = "#D4D4D4" }
-			-- 	hl["@namespace"] = { fg = "#C8C8C8" }
-			-- 	hl["@module"] = { fg = "#C8C8C8" }
-			-- 	hl["@attribute"] = { fg = "#C8C8C8" }
+				hl["@operator"]             = { fg = "#D4D4D4" }
+				hl["@punctuation.bracket"]  = { fg = "#FFD700" }
+				hl["@punctuation.delimiter"]= { fg = "#D4D4D4" }
+				hl["@namespace"]            = { fg = "#C8C8C8" }
+				hl["@module"]              = { fg = "#C8C8C8" }
+				hl["@attribute"]            = { fg = "#C8C8C8" }
+				hl["@symbol"]              = { fg = r.purple }
 
-			-- 	-- ── LSP Semantic Tokens (Roslyn) ──────────────────────
-			-- 	hl["@lsp.type.class"] = { fg = "#4EC9B0" }
-			-- 	hl["@lsp.type.interface"] = { fg = "#B8D7A3" }
-			-- 	hl["@lsp.type.struct"] = { fg = "#86C691" }
-			-- 	hl["@lsp.type.enum"] = { fg = "#B8D7A3" }
-			-- 	hl["@lsp.type.enumMember"] = { fg = "#B8D7A3" }
-			-- 	hl["@lsp.type.method"] = { fg = "#DCDCAA" }
-			-- 	hl["@lsp.type.function"] = { fg = "#DCDCAA" }
-			-- 	hl["@lsp.type.property"] = { fg = "#9CDCFE" }
-			-- 	hl["@lsp.type.variable"] = { fg = "#9CDCFE" }
-			-- 	hl["@lsp.type.parameter"] = { fg = rider.white } -- ✅ White for params
-			-- 	hl["@lsp.type.namespace"] = { fg = "#C8C8C8" }
-			-- 	hl["@lsp.type.keyword"] = { fg = rider.blue }
-			-- 	hl["@lsp.type.string"] = { fg = rider.string }
-			-- 	hl["@lsp.type.number"] = { fg = "#B5CEA8" }
-			-- 	hl["@lsp.type.operator"] = { fg = "#D4D4D4" }
-			-- 	hl["@lsp.type.comment"] = { fg = rider.comment }
-			-- 	hl["@lsp.type.modifier"] = { fg = rider.blue }
-			-- 	hl["@lsp.type.event"] = { fg = "#DCDCAA" }
-			-- 	hl["@lsp.type.delegate"] = { fg = "#DCDCAA" }
-			-- 	hl["@lsp.type.typeParameter"] = { fg = "#B8D7A3" }
+				-- ── LSP Semantic Tokens (Roslyn) ──────────────────────────
+				hl["@lsp.type.class"]         = { fg = "#4EC9B0" }
+				hl["@lsp.type.interface"]     = { fg = "#B8D7A3" }
+				hl["@lsp.type.struct"]        = { fg = "#86C691" }
+				hl["@lsp.type.enum"]          = { fg = "#B8D7A3" }
+				hl["@lsp.type.enumMember"]    = { fg = "#B8D7A3" }
+				hl["@lsp.type.method"]        = { fg = "#DCDCAA" }
+				hl["@lsp.type.function"]      = { fg = "#DCDCAA" }
+				hl["@lsp.type.property"]      = { fg = "#9CDCFE" }
+				hl["@lsp.type.variable"]      = { fg = "#9CDCFE" }
+				hl["@lsp.type.parameter"]     = { fg = r.white }
+				hl["@lsp.type.namespace"]     = { fg = "#C8C8C8" }
+				hl["@lsp.type.keyword"]       = { fg = r.blue }
+				hl["@lsp.type.string"]        = { fg = r.string }
+				hl["@lsp.type.number"]        = { fg = "#B5CEA8" }
+				hl["@lsp.type.comment"]       = { fg = r.comment }
+				hl["@lsp.type.modifier"]      = { fg = r.blue }
+				hl["@lsp.type.event"]         = { fg = "#DCDCAA" }
+				hl["@lsp.type.delegate"]      = { fg = "#DCDCAA" }
+				hl["@lsp.type.typeParameter"] = { fg = "#B8D7A3" }
+				hl["@lsp.type.operator"]      = { fg = "#D4D4D4" }
 
-			-- 	-- ── Git Conflict (git-conflict.nvim) ──────────────────
-			-- 	hl["GitConflictCurrent"] = { bg = "#2f3f2f" }
-			-- 	hl["GitConflictCurrentLabel"] = { bg = "#3a5f3a", bold = true }
-			-- 	hl["GitConflictIncoming"] = { bg = "#2f2f4f" }
-			-- 	hl["GitConflictIncomingLabel"] = { bg = "#3a3a6f", bold = true }
-			-- 	hl["GitConflictAncestor"] = { bg = "#3f3f2f" }
-			-- 	hl["GitConflictAncestorLabel"] = { bg = "#5f5f3a" }
-			-- end,
+				-- ── Editor UI ──────────────────────────────────────────────
+				hl.LineNr       = { fg = r.line_num }
+				hl.CursorLineNr = { fg = r.yellow, bold = true }
+				hl.Visual       = { bg = r.selection }
+				hl.ColorColumn  = { bg = r.bg_highlight }
+				hl.Pmenu        = { bg = r.bg_dark, fg = r.fg }
+				hl.PmenuSel     = { bg = r.selection, fg = r.white, bold = true }
+
+				-- ── Git Conflict ───────────────────────────────────────────
+				hl["GitConflictCurrent"]       = { bg = "#2f3f2f" }
+				hl["GitConflictCurrentLabel"]  = { bg = "#3a5f3a", bold = true }
+				hl["GitConflictIncoming"]      = { bg = "#2f2f4f" }
+				hl["GitConflictIncomingLabel"] = { bg = "#3a3a6f", bold = true }
+				hl["GitConflictAncestor"]      = { bg = "#3f3f2f" }
+				hl["GitConflictAncestorLabel"] = { bg = "#5f5f3a" }
+
+				-- ── fzf-lua (Rider accent) ────────────────────────────────
+				hl["FzfLuaBorder"]     = { fg = r.blue }
+				hl["FzfLuaTitle"]      = { fg = r.blue, bold = true }
+				hl["FzfLuaHeaderText"] = { fg = r.purple }
+			end,
 		})
 
 		vim.cmd.colorscheme("tokyonight-night")
 
-		vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = "#F44747" })
-		vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn", { undercurl = true, sp = "#CCA700" })
-		vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo", { undercurl = true, sp = "#4FC1FF" })
-		vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint", { undercurl = true, sp = "#A6A6A6" })
+		-- ── Diagnostic underlines ────────────────────────────────────────
+		vim.api.nvim_set_hl(0, "DiagnosticUnderlineError", { undercurl = true, sp = r.bright_red })
+		vim.api.nvim_set_hl(0, "DiagnosticUnderlineWarn",  { undercurl = true, sp = "#CCA700" })
+		vim.api.nvim_set_hl(0, "DiagnosticUnderlineInfo",  { undercurl = true, sp = "#4FC1FF" })
+		vim.api.nvim_set_hl(0, "DiagnosticUnderlineHint",  { undercurl = true, sp = "#A6A6A6" })
 	end,
 }

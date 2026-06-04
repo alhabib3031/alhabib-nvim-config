@@ -10,13 +10,16 @@ This Neovim configuration is a premium, high-performance IDE setup specifically 
 ## 🚀 Key Features
 
 - **easy-dotnet.nvim**: All-in-one .NET plugin — Roslyn LSP, netcoredbg, test runner, NuGet, EF Core, User Secrets, Workspace Diagnostics.
-- **Rider-Inspired Aesthetics**: Tokyonight-night theme customized with authentic JetBrains Rider colors.
+- **JetBrains Rider Dark Theme**: Custom tokyonight-based theme using exact Rider Dark colors (`#262626` bg, `#6C95EB` blue, `#C191FF` purple).
+- **fzf-lua**: Blazing-fast fullscreen fuzzy finder with exact-match mode, vertical preview, and `Ctrl-q` quickfix send.
+- **Comment.nvim**: Smart line/block commenting with Rider-style `<C-k>c` shortcut.
+- **LuaSnip**: Snippet engine with VSCode community snippets + custom C# snippets (ctor, prop, di, asyncm, cw).
 - **Smart Formatting**: Automatic formatting via `CSharpier` for C# and `prettier` for web files.
 - **Advanced Debugging**: Full integration with `nvim-dap` and `netcoredbg` (F5, F10, F11 workflow).
-- **Premium Dashboard**: A custom-built dashboard for quick project switching and .NET actions.
+- **Premium Dashboard**: A custom-built dashboard with Rider Dark colors for quick project switching and .NET actions.
 - **Smooth Animations**: Moving cursor with animations via `SmoothCursor.nvim`.
 - **Zen Mode**: Distraction-free coding with `centerpad`.
-- **Git Support**: Visual conflict resolution and deep Telescope integration.
+- **Git Support**: Visual conflict resolution and deep Telescope/fzf integration.
 
 ---
 
@@ -34,6 +37,28 @@ This Neovim configuration is a premium, high-performance IDE setup specifically 
 | `<leader>x` | Close current tab |
 | `<Esc>` | Clear search highlights |
 | `<leader>z` | Toggle Zen Mode (Centerpad) |
+
+### fzf-lua (Fuzzy Finder)
+| Key | Action |
+|-----|--------|
+| `<leader>sf` | Search Files (fzf, fullscreen) |
+| `<leader>sg` | Live Grep (fzf) |
+| `<leader>sb` | Search Buffers (fzf) |
+| `<leader>sd` | Workspace Diagnostics (fzf) |
+| `<leader>sr` | Resume last fzf search |
+| `<leader>s.` | Search Recent files (fzf) |
+| `<leader>sw` | Search word under cursor (fzf) |
+| `<leader>/` | Fuzzy search current buffer |
+| `Ctrl-q` *(in fzf)* | Send all results to quickfix |
+
+### Commenting (Comment.nvim)
+| Key | Action |
+|-----|--------|
+| `gcc` | Toggle line comment |
+| `gbc` | Toggle block comment |
+| `gc` *(visual)* | Toggle line comment on selection |
+| `gb` *(visual)* | Toggle block comment on selection |
+| `<C-k>c` | Toggle line comment (Rider style) |
 
 ### Code Editing & Navigation
 | Key | Action |
@@ -121,6 +146,36 @@ This Neovim configuration is a premium, high-performance IDE setup specifically 
 ## 🏗️ Architecture
 
 ```
+lua/
+├── options.lua              ← global vim options, folding, diagnostics
+├── keymaps.lua              ← all keymaps in one place
+└── custom/plugins/
+    ├── ui/
+    │   ├── theme.lua            ← JetBrains Rider Dark (tokyonight-based)
+    │   ├── dashboard.lua        ← startup dashboard with .NET actions
+    │   ├── treesitter.lua       ← syntax + folding
+    │   ├── ui_tools.lua         ← neo-tree, bufferline, noice, lightbulb
+    │   ├── smoothcursor.lua     ← animated cursor
+    │   ├── indent_line.lua      ← indent guides
+    │   └── mini.lua             ← mini.icons etc.
+    └── tools/
+        ├── fzf.lua              ← fzf-lua (files, grep, diagnostics, ui.select)
+        ├── snippets.lua         ← LuaSnip + C# / Lua snippets
+        ├── comments.lua         ← Comment.nvim (gcc, gbc, <C-k>c)
+        ├── telescope.lua        ← LSP pickers, help, keymaps
+        ├── debugger.lua         ← nvim-dap + dapui (.NET / netcoredbg)
+        ├── extras.lua           ← oil.nvim, centerpad, git-conflict, smart-splits
+        ├── easy_dotnet.lua      ← .NET all-in-one (run, build, test, NuGet, EF)
+        ├── git.lua              ← gitsigns
+        ├── autopairs.lua
+        ├── lint.lua
+        ├── terminal.lua         ← toggleterm
+        └── which-key.lua
+
+Fuzzy-finder split:
+  fzf-lua  → files, live_grep, buffers, diagnostics, oldfiles, vim.ui.select
+  telescope → LSP go-to, references, help_tags, keymaps, commands
+
 easy-dotnet.nvim (single plugin handles):
   ├── Roslyn LSP          ← replaces roslyn.nvim
   ├── netcoredbg debugger ← replaces manual DAP config
@@ -139,11 +194,13 @@ easy-dotnet.nvim (single plugin handles):
 |--------|-------------|
 | `ctor` | Constructor with class name |
 | `prop` | Auto-property `public T Prop { get; set; }` |
-| `nn` | Null check with ArgumentNullException |
-| `di` | Dependency Injection field (`private readonly...`) |
+| `nn` | Null check `ArgumentNullException.ThrowIfNull()` |
+| `di` | DI field `private readonly IService _service` |
 | `asyncm` | Async Task method template |
 | `cw` | `Console.WriteLine()` |
 | `/// summary` | XML Documentation Summary |
+
+> Snippets use **Tab** to expand and jump forward, **Shift-Tab** to jump backward.
 
 ---
 
@@ -153,6 +210,9 @@ easy-dotnet.nvim (single plugin handles):
 2. **dotnet SDK** installed and in PATH.
 3. **EasyDotnet server**: `dotnet tool install -g EasyDotnet`
 4. **Nerd Font** (e.g., JetBrainsMono Nerd Font) for icons.
+5. **fzf** binary in PATH — required by fzf-lua. Install via:
+   - Windows (Scoop): `scoop install fzf`
+   - Windows (Winget): `winget install junegunn.fzf`
 
 ### Setup
 ```bash

@@ -161,18 +161,29 @@ return {
 		dap.listeners.before.event_exited["dapui_config"] = dapui.close
 
 		-- ── Breakpoint signs (Rider style) ───────────────────────
-		vim.fn.sign_define("DapBreakpoint", { text = "●", texthl = "DiagnosticError", linehl = "", numhl = "" })
-		vim.fn.sign_define(
-			"DapBreakpointCondition",
-			{ text = "◆", texthl = "DiagnosticWarn", linehl = "", numhl = "" }
-		)
-		vim.fn.sign_define(
-			"DapStopped",
-			{ text = "▶", texthl = "DiagnosticInfo", linehl = "DiagnosticUnderlineInfo", numhl = "" }
-		)
-		vim.fn.sign_define(
-			"DapBreakpointRejected",
-			{ text = "✖", texthl = "DiagnosticError", linehl = "", numhl = "" }
-		)
+		vim.fn.sign_define("DapBreakpoint", {
+			text   = "⚪",
+			texthl = "DapBreakpointSymbol",
+			linehl = "DapBreakpoint",
+			numhl  = "DapBreakpoint",
+		})
+		vim.fn.sign_define("DapStopped", {
+			text   = "🔴",
+			texthl = "yellow",
+			linehl = "DapBreakpoint",
+			numhl  = "DapBreakpoint",
+		})
+		vim.fn.sign_define("DapBreakpointCondition", {
+			text   = "◆",
+			texthl = "DiagnosticWarn",
+			linehl = "",
+			numhl  = "",
+		})
+		vim.fn.sign_define("DapBreakpointRejected", {
+			text   = "⭕",
+			texthl = "DapStoppedSymbol",
+			linehl = "DapBreakpoint",
+			numhl  = "DapBreakpoint",
+		})
 	end,
 }
