@@ -53,24 +53,24 @@ return {
 			require("mason").setup(mason_opts)
 			require("mason-tool-installer").setup({ ensure_installed = mason_opts.ensure_installed })
 
-			vim.api.nvim_create_autocmd("LspAttach", {
-				group = vim.api.nvim_create_augroup("My-lsp-attach", { clear = true }),
-				callback = function(event)
-					local map = function(keys, func, desc, mode)
-						mode = mode or "n"
-						vim.keymap.set(mode, keys, func, { buf = event.buf, desc = "LSP: " .. desc })
-					end
+			-- vim.api.nvim_create_autocmd("LspAttach", {
+			-- 	group = vim.api.nvim_create_augroup("My-lsp-attach", { clear = true }),
+			-- 	callback = function(event)
+			-- 		local map = function(keys, func, desc, mode)
+			-- 			mode = mode or "n"
+			-- 			vim.keymap.set(mode, keys, func, { buf = event.buf, desc = "LSP: " .. desc })
+			-- 		end
 
-					-- Standard LSP Actions (Rider-style)
-					map("grn", vim.lsp.buf.rename, "[R]e[n]ame")
-					map("grA", vim.lsp.buf.code_action, "Code [A]ction", { "n", "x" })
-					map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" })
-					map("grD", vim.lsp.buf.declaration, "[D]eclaration")
-					map("gd", vim.lsp.buf.definition, "[G]o to [D]efinition")
-					map("gr", vim.lsp.buf.references, "[G]oto [R]eferences")
-					map("gI", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
+			-- 		-- Standard LSP Actions (Rider-style)
+			-- 		map("grn", vim.lsp.buf.rename, "[R]e[n]ame")
+			-- 		map("grA", vim.lsp.buf.code_action, "Code [A]ction", { "n", "x" })
+			-- 		map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" })
+			-- 		map("grD", vim.lsp.buf.declaration, "[D]eclaration")
+			-- 		map("gd", vim.lsp.buf.definition, "[G]o to [D]efinition")
+			-- 		map("gr", vim.lsp.buf.references, "[G]oto [R]eferences")
+			-- 		map("gI", vim.lsp.buf.implementation, "[G]oto [I]mplementation")
 
-					local client = vim.lsp.get_client_by_id(event.data.client_id)
+			-- 		local client = vim.lsp.get_client_by_id(event.data.client_id)
 
 					-- 🛠️ Fix Razor HTML Colors: Disable Semantic Tokens for .razor files
 					-- Because Roslyn paints HTML as plain text and overrides TreeSitter's beautiful colors
@@ -78,33 +78,42 @@ return {
 					-- 	client.server_capabilities.semanticTokensProvider = nil
 					-- end
 
-					if client and client:supports_method("textDocument/documentHighlight", event.buf) then
-						local hl = vim.api.nvim_create_augroup("My-lsp-highlight", { clear = false })
-						vim.api.nvim_create_autocmd(
-							{ "CursorHold", "CursorHoldI" },
-							{ buffer = event.buf, group = hl, callback = vim.lsp.buf.document_highlight }
-						)
-						vim.api.nvim_create_autocmd(
-							{ "CursorMoved", "CursorMovedI" },
-							{ buffer = event.buf, group = hl, callback = vim.lsp.buf.clear_references }
-						)
-					end
+					-- if client and client:supports_method("textDocument/documentHighlight", event.buf) then
+					-- 	local hl = vim.api.nvim_create_augroup("My-lsp-highlight", { clear = false })
+					-- 	vim.api.nvim_create_autocmd(
+					-- 		{ "CursorHold", "CursorHoldI" },
+					-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.document_highlight }
+					-- 	)
+					-- 	vim.api.nvim_create_autocmd(
+					-- 		{ "CursorMoved", "CursorMovedI" },
+					-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.clear_references }
+					-- 	)
+					-- end
 
-					if client and client:supports_method("textDocument/inlayHint", event.buf) then
-						map("<leader>ti", function()
-							vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-						end, "[T]oggle [I]nlay Hints")
-					end
+					-- if client and client:supports_method("textDocument/inlayHint", event.buf) then
+					-- 	map("<leader>ti", function()
+					-- 		vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+					-- 	end, "[T]oggle [I]nlay Hints")
+					-- end
 
-					-- CodeLens For .NET
-					if client and client:supports_method("textDocument/codeLens", event.buf) then
-						vim.lsp.codelens.enable(true, { bufnr = event.buf })
-					end
-				end,
-			})
+					-- -- CodeLens For .NET
+					-- if client and client:supports_method("textDocument/codeLens", event.buf) then
+					-- 	vim.lsp.codelens.enable(true, { bufnr = event.buf })
+					-- end
+				-- end,
+			-- })
 
 			local servers = {
-				roslyn_ls = {},
+				roslyn_ls = {
+					filetypes = { "razor", "cs" },
+					settings = {
+						-- better performance
+						["csharp|background_analysis"] = {
+							dotnet_analyzer_diagnostics_scope = "openFiles",
+							dotnet_compiler_diagnostics_scope = "openFiles",
+						},
+					},
+				},
 				stylua = {},
 				lua_ls = {
 					-- [MODIFIED] Simplified lua_ls config.
