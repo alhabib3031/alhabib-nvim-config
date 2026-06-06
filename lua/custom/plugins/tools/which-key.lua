@@ -6,10 +6,11 @@ return {
     "folke/which-key.nvim",
     event = "VimEnter",
     opts = {
-      delay = 400,
+      delay = 0,
       icons = { mappings = true },
       spec = {
         { "<leader>s",  group = "[S]earch" },
+        { "<leader>o",  group = "[O]pen" },
         { "<leader>t",  group = "[T]oggle" },
         { "<leader>h",  group = "Git [H]unk",         mode = { "n", "v" } },
         { "<leader>d",  group = "[D]otnet / [D]ebug" },

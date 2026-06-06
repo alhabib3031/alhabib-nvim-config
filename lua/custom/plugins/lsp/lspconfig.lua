@@ -33,7 +33,7 @@ return {
 						"eslint-lsp",
 						"typescript-language-server",
 						"netcoredbg",
-						"roslyn-language-server",
+						-- "roslyn-language-server",
 						"json-lsp",
 						"yaml-language-server",
 						"markdown-oxide",
@@ -72,35 +72,35 @@ return {
 
 			-- 		local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-					-- 🛠️ Fix Razor HTML Colors: Disable Semantic Tokens for .razor files
-					-- Because Roslyn paints HTML as plain text and overrides TreeSitter's beautiful colors
-					-- if vim.bo[event.buf].filetype == "razor" and client then
-					-- 	client.server_capabilities.semanticTokensProvider = nil
-					-- end
+			-- 🛠️ Fix Razor HTML Colors: Disable Semantic Tokens for .razor files
+			-- Because Roslyn paints HTML as plain text and overrides TreeSitter's beautiful colors
+			-- if vim.bo[event.buf].filetype == "razor" and client then
+			-- 	client.server_capabilities.semanticTokensProvider = nil
+			-- end
 
-					-- if client and client:supports_method("textDocument/documentHighlight", event.buf) then
-					-- 	local hl = vim.api.nvim_create_augroup("My-lsp-highlight", { clear = false })
-					-- 	vim.api.nvim_create_autocmd(
-					-- 		{ "CursorHold", "CursorHoldI" },
-					-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.document_highlight }
-					-- 	)
-					-- 	vim.api.nvim_create_autocmd(
-					-- 		{ "CursorMoved", "CursorMovedI" },
-					-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.clear_references }
-					-- 	)
-					-- end
+			-- if client and client:supports_method("textDocument/documentHighlight", event.buf) then
+			-- 	local hl = vim.api.nvim_create_augroup("My-lsp-highlight", { clear = false })
+			-- 	vim.api.nvim_create_autocmd(
+			-- 		{ "CursorHold", "CursorHoldI" },
+			-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.document_highlight }
+			-- 	)
+			-- 	vim.api.nvim_create_autocmd(
+			-- 		{ "CursorMoved", "CursorMovedI" },
+			-- 		{ buffer = event.buf, group = hl, callback = vim.lsp.buf.clear_references }
+			-- 	)
+			-- end
 
-					-- if client and client:supports_method("textDocument/inlayHint", event.buf) then
-					-- 	map("<leader>ti", function()
-					-- 		vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
-					-- 	end, "[T]oggle [I]nlay Hints")
-					-- end
+			-- if client and client:supports_method("textDocument/inlayHint", event.buf) then
+			-- 	map("<leader>ti", function()
+			-- 		vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+			-- 	end, "[T]oggle [I]nlay Hints")
+			-- end
 
-					-- -- CodeLens For .NET
-					-- if client and client:supports_method("textDocument/codeLens", event.buf) then
-					-- 	vim.lsp.codelens.enable(true, { bufnr = event.buf })
-					-- end
-				-- end,
+			-- -- CodeLens For .NET
+			-- if client and client:supports_method("textDocument/codeLens", event.buf) then
+			-- 	vim.lsp.codelens.enable(true, { bufnr = event.buf })
+			-- end
+			-- end,
 			-- })
 
 			local servers = {

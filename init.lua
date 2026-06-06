@@ -15,6 +15,8 @@ end
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 vim.g.have_nerd_font = true
+-- 1.2 Load global feature flags early
+_G.settings = require("settings")
 
 -- 1.1 Ensure TreeSitter parser directory exists and is in runtimepath
 local ts_site = vim.fn.stdpath("data") .. "/site"
@@ -41,11 +43,19 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 -- 4. Setup Plugin Architecture (Modules)
-require("lazy").setup({
-	{ import = "custom.plugins.ui" },
-	{ import = "custom.plugins.lsp" },
-	{ import = "custom.plugins.tools" },
-}, {
+-- Build plugin import list based on settings flags
+local plugin_imports = {}
+if _G.settings and _G.settings.enable_dashboard then
+	table.insert(plugin_imports, { import = "custom.plugins.ui" })
+end
+if _G.settings and _G.settings.enable_lsp then
+	table.insert(plugin_imports, { import = "custom.plugins.lsp" })
+end
+if _G.settings and (_G.settings.enable_git or _G.settings.enable_terminal or _G.settings.enable_dotnet) then
+	table.insert(plugin_imports, { import = "custom.plugins.tools" })
+end
+
+require("lazy").setup(plugin_imports, {
 	ui = { border = "rounded" },
 })
 

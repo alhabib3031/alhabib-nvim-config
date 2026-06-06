@@ -13,7 +13,7 @@ return {
 
 			local install = require("nvim-treesitter.install")
 			install.prefer_git = false
-			install.compilers = { "gcc", "clang", "zig" }
+			install.compilers = { "gcc", "clang" }
 
 			if ok then
 				configs.setup({

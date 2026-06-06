@@ -26,6 +26,7 @@ return {
       formatters_by_ft = {
         lua    = { "stylua" },
         cs     = { "csharpier" },   -- ✅ C# formatter
+        razor  = { "roslyn_ls" },
         xml    = { "xmlformat" },   -- ✅ XML/csproj
         csproj = { "xmlformat" },
         css    = { "prettier" },

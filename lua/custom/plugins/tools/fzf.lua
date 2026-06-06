@@ -21,6 +21,8 @@ return {
 		},
 		config = function()
 			require("fzf-lua").setup({
+				-- path to fzf executable (user-local)
+				fzf_bin = "C:\\Users\\alhab\\bin\\fzf.exe",
 				-- ── Window ──────────────────────────────────────────────
 				winopts = {
 					fullscreen = true,
