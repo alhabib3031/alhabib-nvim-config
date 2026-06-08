@@ -5,33 +5,33 @@ return {
 	{
 		"windwp/nvim-ts-autotag",
 		dependencies = { "nvim-treesitter/nvim-treesitter" },
-		event = { "BufReadPre", "BufNewFile" },
+
+		-- ✅ FIXED: was BufReadPre — fired BEFORE treesitter loaded.
+		-- Now matches treesitter's event so the parser is always ready.
+		event = { "BufReadPost", "BufNewFile" },
+
 		opts = {
+			-- New nvim-ts-autotag API (v1.0+): works via TreeSitter node types,
+			-- no need for explicit filetypes list — if the TS parser is active,
+			-- autotag follows automatically (razor now has a working parser).
 			opts = {
-				enable_close = true, -- Auto close tags
-				enable_rename = true, -- Auto rename pairs of tags
-				enable_close_on_slash = false, -- Auto close on trailing </
+				enable_close = true, -- type <div → get </div> automatically
+				enable_rename = true, -- rename opening tag → closing renames too
+				enable_close_on_slash = true, -- type </ → auto-complete closing tag
 			},
-			-- Add razor to the list of filetypes to ensure it works in razor files
-			filetypes = {
-				"html",
-				"javascript",
-				"typescript",
-				"javascriptreact",
-				"typescriptreact",
-				"svelte",
-				"vue",
-				"tsx",
-				"jsx",
-				"rescript",
-				"xml",
-				"php",
-				"markdown",
-				"astro",
-				"glimmer",
-				"handlebars",
-				"liquid",
-				"razor",
+
+			-- Per-filetype overrides if needed
+			per_filetype = {
+				-- Razor mixes HTML + C#; keep all three features on
+				["razor"] = {
+					enable_close = true,
+					enable_rename = true,
+					enable_close_on_slash = true,
+				},
+				-- Plain HTML: some prefer not to auto-close on slash
+				["html"] = {
+					enable_close_on_slash = false,
+				},
 			},
 		},
 	},

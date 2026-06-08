@@ -2,14 +2,14 @@
 -- NVIM CONFIG — ALHABIB IDE (Minimalist Entry Point)
 -- ============================================================
 
--- 0. [HOTFIX] Neovim 0.12 LSP: Fix "compare number with nil" in util.lua:524
-local original_apply_text_document_edit = vim.lsp.util.apply_text_document_edit
-vim.lsp.util.apply_text_document_edit = function(text_document_edit, index, pos_encoding, annotations)
-	if text_document_edit and text_document_edit.textDocument and text_document_edit.textDocument.version == nil then
-		text_document_edit.textDocument.version = vim.NIL
-	end
-	return original_apply_text_document_edit(text_document_edit, index, pos_encoding, annotations)
-end
+-- -- 0. [HOTFIX] Neovim 0.12 LSP: Fix "compare number with nil" in util.lua:524
+-- local original_apply_text_document_edit = vim.lsp.util.apply_text_document_edit
+-- vim.lsp.util.apply_text_document_edit = function(text_document_edit, index, pos_encoding, annotations)
+-- 	if text_document_edit and text_document_edit.textDocument and text_document_edit.textDocument.version == nil then
+-- 		text_document_edit.textDocument.version = vim.NIL
+-- 	end
+-- 	return original_apply_text_document_edit(text_document_edit, index, pos_encoding, annotations)
+-- end
 
 -- 1. Essential Global Keys (Must be defined first)
 vim.g.mapleader = " "
@@ -18,15 +18,23 @@ vim.g.have_nerd_font = true
 -- 1.2 Load global feature flags early
 _G.settings = require("settings")
 
--- 1.1 Ensure TreeSitter parser directory exists and is in runtimepath
-local ts_site = vim.fn.stdpath("data") .. "/site"
-if not (vim.uv or vim.loop).fs_stat(ts_site) then
-	vim.fn.mkdir(ts_site, "p")
-end
-vim.opt.runtimepath:prepend(ts_site)
+-- -- 1.1 Ensure TreeSitter parser directory exists and is in runtimepath
+-- local ts_site = vim.fn.stdpath("data") .. "/site"
+-- if not (vim.uv or vim.loop).fs_stat(ts_site) then
+-- 	vim.fn.mkdir(ts_site, "p")
+-- end
+-- vim.opt.runtimepath:prepend(ts_site)
 
 -- 2. Load Core Settings & Filetype definitions
 require("options")
+
+-- Razor / cshtml filetype detection
+vim.filetype.add({
+	extension = {
+		cshtml = "razor",
+		razor = "razor",
+	},
+})
 
 -- 3. Bootstrap Plugin Manager (lazy.nvim)
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -58,7 +66,6 @@ end
 require("lazy").setup(plugin_imports, {
 	ui = { border = "rounded" },
 })
-
 
 -- 5. Essential UI Autocommands
 local group = vim.api.nvim_create_augroup("alhabib-core", { clear = true })
